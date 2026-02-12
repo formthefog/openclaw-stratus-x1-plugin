@@ -1,0 +1,28 @@
+{
+  "name": "@openclaw/stratus",
+  "version": "2026.2.11",
+  "description": "Stratus API integration for OpenClaw - action-conditioned JEPA for autonomous agent planning",
+  "keywords": [
+    "agent",
+    "embeddings",
+    "jepa",
+    "openclaw",
+    "planning",
+    "stratus",
+    "world-model"
+  ],
+  "license": "MIT",
+  "author": "OpenClaw",
+  "type": "module",
+  "dependencies": {
+    "@sinclair/typebox": "0.34.48"
+  },
+  "devDependencies": {
+    "openclaw": "workspace:*"
+  },
+  "openclaw": {
+    "extensions": [
+      "./index.ts"
+    ]
+  }
+}
