@@ -1,4 +1,10 @@
-# Stratus API Integration for OpenClaw
+<div align="center">
+
+![Stratus X1 OpenClaw](banner.png)
+
+# Stratus X1-AC Plugin for OpenClaw
+
+</div>
 
 Integrate Stratus V3 (X1-AC), a state-of-the-art action-conditioned JEPA (Joint-Embedding Predictive Architecture), into OpenClaw for autonomous agent planning and semantic state understanding.
 
