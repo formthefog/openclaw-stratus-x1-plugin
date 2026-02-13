@@ -10,7 +10,7 @@ export const StratusConfigSchema: OpenClawPluginConfigSchema = {
 
     const enabled = typeof raw.enabled === "boolean" ? raw.enabled : true;
     const apiKey = typeof raw.apiKey === "string" ? raw.apiKey : process.env.STRATUS_API_KEY;
-    const baseUrl = typeof raw.baseUrl === "string" ? raw.baseUrl : "https://dev.api.stratus.run";
+    const baseUrl = typeof raw.baseUrl === "string" ? raw.baseUrl : "https://dev.api.stratus.run/v1";
 
     const provider =
       raw.provider && typeof raw.provider === "object" && !Array.isArray(raw.provider)
@@ -58,7 +58,7 @@ export const StratusConfigSchema: OpenClawPluginConfigSchema = {
   uiHints: {
     enabled: { label: "Enabled" },
     apiKey: { label: "API Key", sensitive: true },
-    baseUrl: { label: "Base URL", placeholder: "https://dev.api.stratus.run" },
+    baseUrl: { label: "Base URL", placeholder: "https://dev.api.stratus.run/v1" },
     "provider.enabled": { label: "Provider Enabled" },
     "provider.defaultModel": {
       label: "Default Model",

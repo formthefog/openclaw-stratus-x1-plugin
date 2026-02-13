@@ -56,7 +56,7 @@ export class StratusClient {
 
 export function createStratusClient(config: StratusPluginConfig | undefined): StratusClient {
   const apiKey = config?.apiKey || process.env.STRATUS_API_KEY;
-  const baseUrl = config?.baseUrl || "https://dev.api.stratus.run";
+  const baseUrl = config?.baseUrl || "https://dev.api.stratus.run/v1";
 
   if (!apiKey) {
     throw new Error(

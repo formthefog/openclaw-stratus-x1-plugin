@@ -75,7 +75,7 @@ export async function setupStratus(prompter: any): Promise<SetupResult> {
       }
       if (!config.models.providers.stratus) {
         config.models.providers.stratus = {
-          baseUrl: "https://dev.api.stratus.run/v1",
+          baseUrl: "https://dev.api.stratus.run/v1/v1",
           api: "openai-completions",
           models: [
             {
@@ -172,7 +172,7 @@ export async function setupStratus(prompter: any): Promise<SetupResult> {
         });
 
         if (addToShell) {
-          const envVars = `\n# Stratus X1 configuration for OpenClaw\nexport STRATUS_API_KEY=${apiKey}\nexport STRATUS_BASE_URL=https://dev.api.stratus.run\n`;
+          const envVars = `\n# Stratus X1 configuration for OpenClaw\nexport STRATUS_API_KEY=${apiKey}\nexport STRATUS_BASE_URL=https://dev.api.stratus.run/v1\n`;
 
           if (fs.existsSync(shellConfig)) {
             const content = fs.readFileSync(shellConfig, "utf-8");
