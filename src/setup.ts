@@ -35,7 +35,7 @@ export async function setupStratus(prompter: any): Promise<SetupResult> {
             return "API key is required";
           }
           if (!val.startsWith("stratus_sk_")) {
-            return "API key must start with 'stratus_sk_'";
+            return "API key must start with 'stratus_sk_'\nGet your API key at: https://stratus.run";
           }
           return undefined;
         },
@@ -117,7 +117,11 @@ export async function setupStratus(prompter: any): Promise<SetupResult> {
       return {
         success: false,
         message: "OpenClaw config not found",
-        details: ["Run 'openclaw setup' first to initialize OpenClaw"],
+        details: [
+          "Run 'openclaw setup' first to initialize OpenClaw",
+          "",
+          "Need help? Check the docs: https://docs.openclaw.ai",
+        ],
       };
     }
 
@@ -228,7 +232,11 @@ export async function setupStratus(prompter: any): Promise<SetupResult> {
     return {
       success: false,
       message: "Setup failed",
-      details: [error instanceof Error ? error.message : String(error)],
+      details: [
+        error instanceof Error ? error.message : String(error),
+        "",
+        "Need help? Visit: https://docs.stratus.run",
+      ],
     };
   }
 }

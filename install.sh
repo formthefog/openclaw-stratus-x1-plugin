@@ -2,6 +2,10 @@
 set -e
 
 # Stratus OpenClaw Plugin Installer
+#
+# Note: You can also use /stratus setup in any OpenClaw chat!
+# This script is an alternative for users who prefer manual setup.
+#
 # Makes installation feel like butter 🧈
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

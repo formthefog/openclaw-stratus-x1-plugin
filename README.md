@@ -18,63 +18,83 @@ Integrate Stratus V3 (X1-AC), a state-of-the-art action-conditioned JEPA (Joint-
 
 ## Installation
 
-### Quick Install (Recommended) 🧈
-
-**Option 1: CLI Command (Easiest)**
+### Quick Start (3 Steps) ✨
 
 ```bash
+# 1. Install the plugin
 npx clawhub install stratus
-openclaw stratus setup
+
+# 2. Restart OpenClaw gateway
 openclaw gateway restart
+
+# 3. Run setup in chat
+# Open any OpenClaw chat interface and send:
+/stratus setup
 ```
 
-The `openclaw stratus setup` command provides an interactive configuration wizard.
+**That's it!** 🧈
 
-**Option 2: Setup Script**
+---
 
-For the smoothest experience, use the automated installer:
+## Available Commands
 
-```bash
-cd openclaw-stratus-x1-plugin
-./install.sh
+Use these slash commands in any OpenClaw chat (TUI, Telegram, Discord, etc.):
+
+| Command | Description |
+|---------|-------------|
+| `/stratus` | Show help |
+| `/stratus setup` | Interactive configuration wizard |
+| `/stratus verify` | Verify plugin is configured correctly |
+
+---
+
+## What `/stratus setup` Does
+
+The interactive setup command will:
+
+1. ✅ Prompt for your Stratus API key
+2. ✅ Update OpenClaw configuration
+3. ✅ Configure authentication profiles
+4. ✅ Add model aliases
+5. ✅ (Optional) Add environment variables to your shell config
+
+---
+
+## Testing Your Installation
+
+After setup, verify everything works:
+
 ```
+# In chat:
+/stratus verify
 
-The installer will:
-- ✅ Prompt for your Stratus API key
-- ✅ Configure OpenClaw automatically
-- ✅ Set up authentication profiles
-- ✅ Add model aliases
-- ✅ Optionally update shell config and LaunchAgent
-
-**That's it!** Your plugin is ready to use.
-
-**Verify installation:**
-
-```bash
-openclaw stratus verify
-# OR
-./verify.sh
-```
-
-This checks that all configuration is correct and the plugin is working.
-
-## CLI Commands
-
-Once installed, the plugin provides these commands:
-
-```bash
-# Interactive setup wizard
-openclaw stratus setup
-
-# Verify configuration
-openclaw stratus verify
+# Then try the model:
+/model stratus
+Hello from Stratus!
 ```
 
 ---
 
-### Manual Installation
+## Manual Installation (Alternative)
 
-#### From OpenClaw Monorepo
+If you prefer manual setup, you can use the included script:
+
+```bash
+npx clawhub install stratus
+cd ~/.openclaw/plugins/stratus
+./install.sh
+openclaw gateway restart
+```
+
+Or run verification manually:
+
+```bash
+./verify.sh
+```
+
+---
+
+### From OpenClaw Monorepo
 
 If you're developing in the OpenClaw monorepo, the plugin is already available:
 

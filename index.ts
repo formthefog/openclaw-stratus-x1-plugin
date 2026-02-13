@@ -355,10 +355,12 @@ const stratusPlugin = {
             // Show help
             return {
               text:
-                "Stratus plugin commands:\n\n" +
-                "  openclaw stratus setup   - Interactive setup for Stratus plugin\n" +
-                "  openclaw stratus verify  - Verify Stratus plugin configuration\n\n" +
-                "Get your API key at: https://stratus.run",
+                "🌊 Stratus X1-AC Plugin\n\n" +
+                "Commands:\n" +
+                "  /stratus setup   - Interactive setup wizard\n" +
+                "  /stratus verify  - Verify configuration\n\n" +
+                "Get your API key: https://stratus.run\n" +
+                "Docs: https://docs.stratus.run",
             };
           }
         },
