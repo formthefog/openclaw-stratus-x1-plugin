@@ -235,7 +235,7 @@ export async function setupStratus(prompter: any): Promise<SetupResult> {
       details: [
         error instanceof Error ? error.message : String(error),
         "",
-        "Need help? Visit: https://docs.stratus.run",
+        "Need help? Visit: https://stratus.run/docs",
       ],
     };
   }

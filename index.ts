@@ -360,7 +360,7 @@ const stratusPlugin = {
                 "  /stratus setup   - Interactive setup wizard\n" +
                 "  /stratus verify  - Verify configuration\n\n" +
                 "Get your API key: https://stratus.run\n" +
-                "Docs: https://docs.stratus.run",
+                "Docs: https://stratus.run/docs",
             };
           }
         },

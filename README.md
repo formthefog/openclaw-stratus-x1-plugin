@@ -541,7 +541,7 @@ MIT
 
 - [Stratus Website](https://stratus.run)
 - [OpenClaw Documentation](https://docs.openclaw.ai)
-- [API Documentation](https://docs.stratus.run)
+- [API Documentation](https://stratus.run/docs)
 - [GitHub Issues](https://github.com/openclaw/openclaw/issues)
 
 ## Support
