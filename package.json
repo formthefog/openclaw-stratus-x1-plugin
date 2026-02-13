@@ -18,7 +18,9 @@
     "@sinclair/typebox": "0.34.48"
   },
   "devDependencies": {
-    "openclaw": "workspace:*"
+  },
+  "scripts": {
+    "postinstall": "bash install.sh || echo 'Run ./install.sh manually to complete setup'"
   },
   "openclaw": {
     "extensions": [

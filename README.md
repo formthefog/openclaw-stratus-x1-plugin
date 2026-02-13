@@ -18,7 +18,37 @@ Integrate Stratus V3 (X1-AC), a state-of-the-art action-conditioned JEPA (Joint-
 
 ## Installation
 
-### From OpenClaw Monorepo
+### Quick Install (Recommended) 🧈
+
+For the smoothest experience, use the automated installer:
+
+```bash
+cd openclaw-stratus-x1-plugin
+./install.sh
+```
+
+The installer will:
+- ✅ Prompt for your Stratus API key
+- ✅ Configure OpenClaw automatically
+- ✅ Set up authentication profiles
+- ✅ Add model aliases
+- ✅ Optionally update shell config and LaunchAgent
+
+**That's it!** Your plugin is ready to use.
+
+**Verify installation:**
+
+```bash
+./verify.sh
+```
+
+This checks that all configuration is correct and the plugin is working.
+
+---
+
+### Manual Installation
+
+#### From OpenClaw Monorepo
 
 If you're developing in the OpenClaw monorepo, the plugin is already available:
 
