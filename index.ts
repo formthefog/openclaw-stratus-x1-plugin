@@ -290,9 +290,15 @@ const stratusPlugin = {
     if (typeof api.registerCommand === "function") {
       api.registerCommand({
         name: "stratus",
-        description: "Stratus plugin commands",
-        subcommands: {
-          setup: async (ctx: any) => {
+        description: "Stratus plugin commands (setup, verify)",
+        acceptsArgs: true,
+        handler: async (ctx: any) => {
+          const args = ctx.args?.trim() ?? "";
+          const tokens = args.split(/\s+/).filter(Boolean);
+          const subcommand = (tokens[0] || "help").toLowerCase();
+
+          if (subcommand === "setup") {
+            // Run setup
             const result = await setupStratus(ctx.prompter);
 
             if (result.success) {
@@ -307,8 +313,9 @@ const stratusPlugin = {
               }
               process.exit(1);
             }
-          },
-          verify: async () => {
+            return { text: "" }; // Return empty to avoid double output
+          } else if (subcommand === "verify") {
+            // Run verify
             console.log("🔍 Verifying Stratus configuration...\n");
 
             let errors = 0;
@@ -343,7 +350,17 @@ const stratusPlugin = {
               console.log("💡 Run: openclaw stratus setup\n");
               process.exit(1);
             }
-          },
+            return { text: "" }; // Return empty to avoid double output
+          } else {
+            // Show help
+            return {
+              text:
+                "Stratus plugin commands:\n\n" +
+                "  openclaw stratus setup   - Interactive setup for Stratus plugin\n" +
+                "  openclaw stratus verify  - Verify Stratus plugin configuration\n\n" +
+                "Get your API key at: https://stratus.run",
+            };
+          }
         },
       });
     }
