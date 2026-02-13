@@ -1,0 +1,24 @@
+{
+  "name": "openclaw-stratus",
+  "type": "service",
+  "description": "Stratus API integration for OpenClaw - action-conditioned JEPA for autonomous agent planning",
+  "service_type": "library",
+  "gtm_parent": "/Users/andrewhathaway/code/formation/gtm",
+  "working_branch": "main",
+  "sync_to_parent": {
+    "journal": true,
+    "knowledge": false,
+    "content": false
+  },
+  "environments": {
+    "development": {
+      "code_path": "/Users/andrewhathaway/code/formation/openclaw-stratus-x1-plugin",
+      "start_command": "echo 'No start command configured'",
+      "port": null,
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "health_check": null
+    }
+  }
+}

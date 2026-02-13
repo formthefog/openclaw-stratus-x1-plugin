@@ -1,0 +1,14 @@
+{
+  "name": "openclaw-stratus",
+  "version": "v1.0.1",
+  "type": "library",
+  "description": "Stratus API integration for OpenClaw - action-conditioned JEPA for autonomous agent planning",
+  "mcp": {
+    "enabled": true,
+    "transport": "stdio",
+    "capabilities": {
+      "tools": true,
+      "resources": true
+    }
+  }
+}

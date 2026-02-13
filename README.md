@@ -20,6 +20,18 @@ Integrate Stratus V3 (X1-AC), a state-of-the-art action-conditioned JEPA (Joint-
 
 ### Quick Install (Recommended) 🧈
 
+**Option 1: CLI Command (Easiest)**
+
+```bash
+npx clawhub install stratus
+openclaw stratus setup
+openclaw gateway restart
+```
+
+The `openclaw stratus setup` command provides an interactive configuration wizard.
+
+**Option 2: Setup Script**
+
 For the smoothest experience, use the automated installer:
 
 ```bash
@@ -39,10 +51,24 @@ The installer will:
 **Verify installation:**
 
 ```bash
+openclaw stratus verify
+# OR
 ./verify.sh
 ```
 
 This checks that all configuration is correct and the plugin is working.
+
+## CLI Commands
+
+Once installed, the plugin provides these commands:
+
+```bash
+# Interactive setup wizard
+openclaw stratus setup
+
+# Verify configuration
+openclaw stratus verify
+```
 
 ---
 

@@ -3,6 +3,7 @@ import { Type } from "@sinclair/typebox";
 import type { StratusPluginConfig } from "./src/types.js";
 import { createStratusClient } from "./src/client.js";
 import { StratusConfigSchema } from "./src/config.js";
+import { setupStratus } from "./src/setup.js";
 
 const PROVIDER_ID = "stratus";
 const PROVIDER_LABEL = "Stratus";
@@ -283,6 +284,74 @@ const stratusPlugin = {
         },
         { optional: true },
       );
+    }
+
+    // Register CLI commands
+    if (typeof api.registerCommand === "function") {
+      api.registerCommand({
+        name: "stratus",
+        description: "Stratus plugin commands",
+        subcommands: {
+          setup: {
+            description: "Interactive setup for Stratus plugin",
+            async run(ctx: any) {
+              const result = await setupStratus(ctx.prompter);
+
+              if (result.success) {
+                console.log(`\n✅ ${result.message}\n`);
+                if (result.details) {
+                  result.details.forEach((line) => console.log(line));
+                }
+              } else {
+                console.error(`\n❌ ${result.message}\n`);
+                if (result.details) {
+                  result.details.forEach((line) => console.error(line));
+                }
+                process.exit(1);
+              }
+            },
+          },
+          verify: {
+            description: "Verify Stratus plugin configuration",
+            async run() {
+              console.log("🔍 Verifying Stratus configuration...\n");
+
+              let errors = 0;
+
+              // Check 1: Environment variable
+              console.log("1️⃣  Checking STRATUS_API_KEY...");
+              if (process.env.STRATUS_API_KEY) {
+                console.log("   ✓ STRATUS_API_KEY is set");
+              } else {
+                console.log("   ❌ STRATUS_API_KEY not found");
+                errors++;
+              }
+
+              // Check 2: Config exists
+              console.log("\n2️⃣  Checking plugin configuration...");
+              if (pluginConfig.apiKey || process.env.STRATUS_API_KEY) {
+                console.log("   ✓ API key configured");
+              } else {
+                console.log("   ❌ API key not configured");
+                errors++;
+              }
+
+              console.log("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+              if (errors === 0) {
+                console.log("✅ All checks passed!");
+                console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
+                console.log("🎯 Try it out:");
+                console.log("   openclaw agent 'Hello Stratus!' --model stratus\n");
+              } else {
+                console.log(`❌ ${errors} issue(s) found`);
+                console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
+                console.log("💡 Run: openclaw stratus setup\n");
+                process.exit(1);
+              }
+            },
+          },
+        },
+      });
     }
   },
 };
