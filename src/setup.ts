@@ -236,6 +236,7 @@ export async function setupStratus(prompter: any): Promise<SetupResult> {
         error instanceof Error ? error.message : String(error),
         "",
         "Need help? Visit: https://stratus.run/docs",
+        "Report issues: https://github.com/formthefog/openclaw-stratus-x1-plugin/issues",
       ],
     };
   }

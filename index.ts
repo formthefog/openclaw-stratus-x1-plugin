@@ -360,7 +360,8 @@ const stratusPlugin = {
                 "  /stratus setup   - Interactive setup wizard\n" +
                 "  /stratus verify  - Verify configuration\n\n" +
                 "Get your API key: https://stratus.run\n" +
-                "Docs: https://stratus.run/docs",
+                "Docs: https://stratus.run/docs\n" +
+                "Issues: https://github.com/formthefog/openclaw-stratus-x1-plugin/issues",
             };
           }
         },

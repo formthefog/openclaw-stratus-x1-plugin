@@ -16,6 +16,12 @@ Integrate Stratus V3 (X1-AC), a state-of-the-art action-conditioned JEPA (Joint-
 - **Secure**: API key authentication with automatic validation
 - **Opt-in Tools**: Tools are optional and require explicit allowlisting
 
+## Support
+
+- **Documentation**: [https://stratus.run/docs](https://stratus.run/docs)
+- **Issues**: [https://github.com/formthefog/openclaw-stratus-x1-plugin/issues](https://github.com/formthefog/openclaw-stratus-x1-plugin/issues)
+- **API Key**: [https://stratus.run](https://stratus.run)
+
 ## Installation
 
 ### Quick Start (3 Steps) ✨
