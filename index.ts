@@ -7,7 +7,7 @@ import { setupStratus } from "./src/setup.js";
 
 const PROVIDER_ID = "stratus";
 const PROVIDER_LABEL = "Stratus";
-const DEFAULT_BASE_URL = "https://dev.api.stratus.run/v1";
+const DEFAULT_BASE_URL = "https://dev.api.stratus.run";
 
 function buildModelDefinition(params: {
   id: string;

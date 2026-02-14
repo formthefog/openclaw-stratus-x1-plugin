@@ -79,7 +79,7 @@ echo "  🔧 Updating OpenClaw configuration..."
 
 # Add models.providers.stratus if not present
 if ! jq -e '.models.providers.stratus' "$OPENCLAW_CONFIG" > /dev/null 2>&1; then
-    jq --arg baseUrl "https://dev.api.stratus.run/v1/v1" \
+    jq --arg baseUrl "https://dev.api.stratus.run/v1" \
        '.models.providers.stratus = {
           baseUrl: $baseUrl,
           api: "openai-completions",
