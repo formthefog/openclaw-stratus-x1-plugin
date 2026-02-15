@@ -115,6 +115,149 @@ pnpm install
 npx clawhub install stratus
 ```
 
+## Uninstallation
+
+To completely remove the Stratus plugin from OpenClaw:
+
+### Quick Uninstall (Automated)
+
+```bash
+# 1. Disable the plugin via config
+openclaw config patch '{"plugins":{"entries":{"stratus":{"enabled":false}},"installs":{"stratus":null}},"models":{"providers":{"stratus":null}},"agents":{"defaults":{"models":{"stratus/stratus-x1ac-base-claude-sonnet-4-5":null,"stratus/stratus-x1ac-base-gpt-4o":null}}}}'
+
+# 2. If your primary model was Stratus, switch back to Anthropic:
+openclaw config patch '{"agents":{"defaults":{"model":{"primary":"anthropic/claude-sonnet-4-5"}}}}'
+
+# 3. Restart gateway
+openclaw gateway restart
+
+# 4. (Optional) Clean up auth cache
+rm ~/.openclaw/agents/main/agent/auth-profiles.json
+openclaw gateway restart
+```
+
+### Manual Uninstall (Step-by-Step)
+
+**1. Disable plugin in config:**
+
+Edit `~/.openclaw/openclaw.json`:
+
+```json
+{
+  "plugins": {
+    "entries": {
+      "stratus": {
+        "enabled": false
+      }
+    }
+  }
+}
+```
+
+**2. Remove provider and model references:**
+
+```json
+{
+  "models": {
+    "providers": {
+      // Remove entire "stratus" section
+    }
+  },
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "anthropic/claude-sonnet-4-5"  // Switch back to default
+      },
+      "models": {
+        // Remove stratus model aliases
+      }
+    }
+  }
+}
+```
+
+**3. Clean auth cache:**
+
+OpenClaw caches API keys in `~/.openclaw/agents/main/agent/auth-profiles.json`. Remove the Stratus entry:
+
+```json
+{
+  "profiles": {
+    "stratus:default": null  // Remove this entire entry
+  },
+  "lastGood": {
+    "stratus": null  // Remove this
+  }
+}
+```
+
+Or delete the entire file and restart (OpenClaw will regenerate it):
+
+```bash
+rm ~/.openclaw/agents/main/agent/auth-profiles.json
+```
+
+**4. Restart gateway:**
+
+```bash
+openclaw gateway restart
+```
+
+**5. (Optional) Remove plugin files:**
+
+If installed via ClawHub:
+
+```bash
+rm -rf ~/.openclaw/plugins/stratus
+```
+
+If installed from local path, the plugin files remain at their original location. Update your config to remove the path reference:
+
+```json
+{
+  "plugins": {
+    "load": {
+      "paths": [
+        // Remove "/path/to/openclaw-stratus-x1-plugin"
+      ]
+    }
+  }
+}
+```
+
+**6. (Optional) Remove environment variable:**
+
+If you added `STRATUS_API_KEY` to your shell profile:
+
+```bash
+# Edit ~/.zshrc or ~/.bashrc and remove:
+# export STRATUS_API_KEY=stratus_sk_...
+```
+
+### Verification
+
+After uninstall, verify Stratus is gone:
+
+```bash
+# Should not show Stratus models
+openclaw agent --help | grep stratus
+
+# Should not show Stratus tools
+openclaw tools list | grep stratus
+```
+
+### Known Issues
+
+**Issue:** After uninstall, `oc models` still shows Stratus
+
+**Cause:** Model aliases are cached separately from provider config.
+
+**Fix:** Use the config patch command above or manually remove from `agents.defaults.models`.
+
+---
+
+**Note:** OpenClaw doesn't currently support plugin lifecycle hooks (`postuninstall`), so cleanup must be done manually. We're tracking this as a feature request: [openclaw#XXXX](https://github.com/openclaw/openclaw/issues).
+
 ## Configuration
 
 ### 1. Get Your API Key
