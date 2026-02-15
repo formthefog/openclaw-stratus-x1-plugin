@@ -71,35 +71,43 @@ Expected: `200 OK` with a response and credit balance
 - 401 Unauthorized = auth cache issue, not endpoint issue
 - Use manual curl to verify auth independently
 
+**Verification Success (2026-02-15):**
+After fixing the auth cache issue:
+- ✅ API endpoint responding: `dev.api.stratus.run`
+- ✅ Authentication working: API key validated
+- ✅ User balance confirmed: 17784.00 credits
+- ✅ Model available: `stratus-x1ac-base-claude-sonnet-4-5`
+- ❌ **Next blocker**: Role field compatibility (see section below)
+
 ---
 
 ### Role Field Compatibility Issue
 
 **Symptoms:**
 - OpenClaw sends `role: "developer"` in messages
-- Stratus API expects `role: "user"` or `role: "assistant"`
+- Stratus API returns error: `"messages: Unexpected role 'developer'. Allowed roles are 'user' or 'assistant'"`
 - May see validation errors about invalid role values
 
 **Root Cause:**
-OpenClaw uses Anthropic's `developer` role for system-level instructions, but OpenAI-compatible APIs (like Stratus) use `system` role instead.
+OpenClaw uses Anthropic's `developer` role for system-level instructions, but the Stratus API (which wraps Anthropic's Messages API) expects only `user` or `assistant` roles. The `developer` role is Anthropic-specific but not supported when using the OpenAI-compatible `/v1/chat/completions` endpoint.
 
-**Current Status:**
-- Stratus API has been updated to accept `developer` role (PR #28)
-- For maximum compatibility, the plugin should map roles:
-  - `developer` → `system` (for OpenAI-compatible providers)
-  - `user` → `user` (pass through)
-  - `assistant` → `assistant` (pass through)
+**Impact:**
+After successfully authenticating and verifying API key/balance, actual chat completion requests fail with role validation errors.
 
-**Workaround:**
-Update Stratus API to accept `developer` role (already done in production).
+**Current Status (2026-02-15):**
+✅ **Authentication working** - API key verified, user balance confirmed (17784.00 credits)
+❌ **Chat completions blocked** - Role field validation prevents actual usage
+🔧 **Fix needed** - Plugin must transform `developer` → `system` for OpenAI-compatible providers
 
-**Long-term Solution:**
-Add role mapping to the OpenClaw Stratus plugin:
+**Solution Options:**
+
+**Option 1: Patch Stratus Plugin (RECOMMENDED)** ✅
+Add role mapping in the OpenClaw Stratus plugin before sending to API:
 
 ```typescript
 // In src/client.ts
 function normalizeRole(role: string): string {
-  // Map Anthropic roles to OpenAI-compatible roles
+  // Map Anthropic-specific roles to OpenAI-compatible roles
   if (role === 'developer') return 'system';
   return role;
 }
@@ -110,6 +118,15 @@ const normalizedMessages = messages.map(msg => ({
   role: normalizeRole(msg.role)
 }));
 ```
+
+**Option 2: File OpenClaw Bug**
+Request OpenClaw core to handle role mapping for `openai-completions` API format providers automatically.
+
+**Option 3: Use Anthropic Messages API**
+Switch from `/v1/chat/completions` (OpenAI format) to `/v1/messages` (native Anthropic format), which natively supports the `developer` role.
+
+**Recommended Path:**
+Implement Option 1 (plugin-level role mapping) as it provides maximum compatibility and doesn't depend on upstream changes.
 
 ---
 
