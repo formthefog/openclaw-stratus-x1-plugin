@@ -401,9 +401,9 @@ Tools are **opt-in only**:
 
 ## Troubleshooting
 
-### "Stratus API key not configured"
+### Quick Fixes
 
-**Cause**: No API key found in config or environment.
+#### "Stratus API key not configured"
 
 **Solution**:
 
@@ -411,15 +411,11 @@ Tools are **opt-in only**:
 export STRATUS_API_KEY=stratus_sk_live_your_key_here
 ```
 
-### "Invalid Stratus API key format"
+#### "Invalid Stratus API key format"
 
-**Cause**: API key doesn't start with `stratus_sk_`.
+**Solution**: Verify your API key from stratus.run starts with `stratus_sk_`.
 
-**Solution**: Verify your API key from stratus.run.
-
-### "Tool not available"
-
-**Cause**: Tool not in allowlist.
+#### "Tool not available"
 
 **Solution**:
 
@@ -427,17 +423,21 @@ export STRATUS_API_KEY=stratus_sk_live_your_key_here
 openclaw config set agents.defaults.tools.allow '["stratus_embeddings", "stratus_rollout"]'
 ```
 
-### "Stratus API error (401)"
+#### "Stratus API error (401)"
 
-**Cause**: Invalid or expired API key.
+**Solution**: Get a new API key from stratus.run and update **both** config files:
+- `~/.openclaw/openclaw.json`
+- `~/.openclaw/agents/main/agent/auth-profiles.json`
 
-**Solution**: Get a new API key from stratus.run.
+Then restart: `openclaw gateway restart`
 
-### "Stratus API error (429)"
+#### Silent Fallback to Anthropic
 
-**Cause**: Rate limit exceeded.
+If SIGBART ignores your Stratus config, see [TROUBLESHOOTING.md](./TROUBLESHOOTING.md#silent-fallback-to-anthropic-sigbart-ignores-stratus-config) for the auth cache fix.
 
-**Solution**: Wait and retry, or upgrade your Stratus plan.
+### Full Troubleshooting Guide
+
+For detailed debugging steps and solutions to common issues, see **[TROUBLESHOOTING.md](./TROUBLESHOOTING.md)**.
 
 ## Architecture
 
