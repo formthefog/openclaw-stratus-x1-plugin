@@ -26,19 +26,29 @@ Integrate Stratus V3 (X1-AC), a state-of-the-art action-conditioned JEPA (Joint-
 
 ### Quick Start (3 Steps) ✨
 
+> **Note:** This plugin does NOT have an automatic postinstall script. You must run setup manually.
+
 ```bash
 # 1. Install the plugin
-npx clawhub install stratus
+npx clawhub install @hathbanger/openclaw-stratus
 
-# 2. Restart OpenClaw gateway
-openclaw gateway restart
-
-# 3. Run setup in chat
-# Open any OpenClaw chat interface and send:
+# 2. Run setup (in any OpenClaw chat interface)
 /stratus setup
+
+# 3. Verify everything works
+/stratus verify
 ```
 
-**That's it!** 🧈
+**That's it!** The `/stratus setup` command handles:
+- ✅ API key configuration
+- ✅ OpenClaw config updates
+- ✅ Auth profile creation
+- ✅ Model registration
+- ✅ Gateway restart prompt
+
+**No manual config editing required!** 🧈
+
+> **Tip:** Once installed, you can also access Stratus models with `/model stratus` in chat.
 
 ---
 
