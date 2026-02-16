@@ -1,5 +1,5 @@
 {
-  "name": "openclaw-stratus",
+  "name": "stratus",
   "type": "service",
   "description": "Stratus API integration for OpenClaw - action-conditioned JEPA for autonomous agent planning",
   "service_type": "library",

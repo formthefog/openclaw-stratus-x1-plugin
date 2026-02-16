@@ -30,7 +30,9 @@ Integrate Stratus V3 (X1-AC), a state-of-the-art action-conditioned JEPA (Joint-
 
 ```bash
 # 1. Install the plugin
-npx clawhub install @hathbanger/openclaw-stratus
+npm install -g @hathbanger/openclaw-stratus
+# or
+npx clawhub install stratus
 
 # 2. Run setup (in any OpenClaw chat interface)
 /stratus setup
@@ -119,7 +121,13 @@ cd /path/to/openclaw
 pnpm install
 ```
 
-### Via ClawHub (Standalone)
+### Via npm (Recommended)
+
+```bash
+npm install -g @hathbanger/openclaw-stratus
+```
+
+### Via ClawHub
 
 ```bash
 npx clawhub install stratus

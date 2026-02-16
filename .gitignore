@@ -38,3 +38,7 @@ coverage/
 # Misc
 *.tmp
 *.bak
+
+# Local development configs
+service.json
+.jfl/

@@ -1,6 +1,6 @@
 {
-  "name": "openclaw-stratus",
-  "version": "v1.0.1",
+  "name": "stratus",
+  "version": "v2.0.12",
   "type": "library",
   "description": "Stratus API integration for OpenClaw - action-conditioned JEPA for autonomous agent planning",
   "mcp": {

@@ -1,6 +1,6 @@
 {
   "name": "@hathbanger/openclaw-stratus",
-  "version": "2026.2.12",
+  "version": "2026.2.13",
   "description": "Stratus API integration for OpenClaw - action-conditioned JEPA for autonomous agent planning",
   "keywords": [
     "agent",
