@@ -58,7 +58,7 @@ export const StratusConfigSchema: OpenClawPluginConfigSchema = {
   uiHints: {
     enabled: { label: "Enabled" },
     apiKey: { label: "API Key", sensitive: true },
-    baseUrl: { label: "Base URL", placeholder: "https://dev.api.stratus.run/v1" },
+    baseUrl: { label: "Base URL", placeholder: "https://dev.api.stratus.run" },
     "provider.enabled": { label: "Provider Enabled" },
     "provider.defaultModel": {
       label: "Default Model",

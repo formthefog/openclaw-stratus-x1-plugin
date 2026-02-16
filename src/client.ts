@@ -37,7 +37,7 @@ export class StratusClient {
   }
 
   async embeddings(params: StratusEmbeddingsRequest): Promise<StratusEmbeddingsResponse> {
-    return this.request<StratusEmbeddingsResponse>("/embeddings", {
+    return this.request<StratusEmbeddingsResponse>("/v1/embeddings", {
       model: params.model || "stratus-x1ac-base",
       input: params.input,
       encoding_format: params.encoding_format || "float",
@@ -45,7 +45,7 @@ export class StratusClient {
   }
 
   async rollout(params: StratusRolloutRequest): Promise<StratusRolloutResponse> {
-    return this.request<StratusRolloutResponse>("/rollout", {
+    return this.request<StratusRolloutResponse>("/v1/rollout", {
       goal: params.goal,
       initial_state: params.initial_state,
       max_steps: params.max_steps || 10,
