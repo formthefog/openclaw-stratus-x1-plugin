@@ -27,9 +27,7 @@
   },
   "devDependencies": {
   },
-  "scripts": {
-    "postinstall": "bash install.sh || echo 'Run ./install.sh manually to complete setup'"
-  },
+  "scripts": {},
   "openclaw": {
     "extensions": [
       "./index.ts"

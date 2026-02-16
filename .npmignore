@@ -1,0 +1,14 @@
+# Development files
+.claude/
+.jfl/
+knowledge/
+
+# OS files
+.DS_Store
+
+# Git
+.git
+.gitignore
+
+# Service config (internal)
+service.json
