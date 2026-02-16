@@ -1,5 +1,5 @@
 {
-  "name": "@openclaw/stratus",
+  "name": "@hathbanger/openclaw-stratus",
   "version": "2026.2.11",
   "description": "Stratus API integration for OpenClaw - action-conditioned JEPA for autonomous agent planning",
   "keywords": [
@@ -15,7 +15,7 @@
   "author": "OpenClaw",
   "repository": {
     "type": "git",
-    "url": "https://github.com/formthefog/openclaw-stratus-x1-plugin"
+    "url": "git+https://github.com/formthefog/openclaw-stratus-x1-plugin.git"
   },
   "bugs": {
     "url": "https://github.com/formthefog/openclaw-stratus-x1-plugin/issues"
@@ -24,8 +24,6 @@
   "type": "module",
   "dependencies": {
     "@sinclair/typebox": "0.34.48"
-  },
-  "devDependencies": {
   },
   "scripts": {},
   "openclaw": {
