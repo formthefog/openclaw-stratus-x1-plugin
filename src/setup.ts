@@ -14,33 +14,33 @@ interface SetupResult {
   details?: string[];
 }
 
-export async function setupStratus(prompter: any): Promise<SetupResult> {
+export async function setupStratus(prompter?: any): Promise<SetupResult> {
   const details: string[] = [];
 
   try {
     // Step 1: Check for existing API key
-    const existingKey = process.env.STRATUS_API_KEY;
+    const apiKey = process.env.STRATUS_API_KEY;
 
-    let apiKey: string;
-    if (existingKey) {
-      details.push("✓ Using existing STRATUS_API_KEY from environment");
-      apiKey = existingKey;
-    } else {
-      // Prompt for API key
-      apiKey = await prompter.text({
-        message: "Enter your Stratus API key:",
-        placeholder: "stratus_sk_...",
-        validate: (val: string) => {
-          if (!val.trim()) {
-            return "API key is required";
-          }
-          if (!val.startsWith("stratus_sk_")) {
-            return "API key must start with 'stratus_sk_'\nGet your API key at: https://stratus.run";
-          }
-          return undefined;
-        },
-      });
+    if (!apiKey) {
+      return {
+        success: false,
+        message: "STRATUS_API_KEY not found",
+        details: [
+          "Please set your Stratus API key as an environment variable:",
+          "",
+          "  export STRATUS_API_KEY=stratus_sk_your_key_here",
+          "",
+          "Or add to your shell config (~/.zshrc or ~/.bashrc):",
+          "",
+          "  echo 'export STRATUS_API_KEY=stratus_sk_your_key_here' >> ~/.zshrc",
+          "  source ~/.zshrc",
+          "",
+          "Get your API key at: https://stratus.run",
+        ],
+      };
     }
+
+    details.push("✓ Using STRATUS_API_KEY from environment");
 
     // Paths
     const homeDir = os.homedir();
@@ -161,56 +161,6 @@ export async function setupStratus(prompter: any): Promise<SetupResult> {
 
     fs.writeFileSync(authProfiles, JSON.stringify(authConfig, null, 2));
     details.push("  ✓ Updated auth profile");
-
-    // Step 4: Environment variable setup (optional)
-    if (!existingKey) {
-      const shellConfig = detectShellConfig();
-      if (shellConfig) {
-        const addToShell = await prompter.confirm({
-          message: `Add STRATUS_API_KEY to ${path.basename(shellConfig)}?`,
-          default: true,
-        });
-
-        if (addToShell) {
-          const envVars = `\n# Stratus X1 configuration for OpenClaw\nexport STRATUS_API_KEY=${apiKey}\nexport STRATUS_BASE_URL=https://dev.api.stratus.run/v1\n`;
-
-          if (fs.existsSync(shellConfig)) {
-            const content = fs.readFileSync(shellConfig, "utf-8");
-            if (!content.includes("STRATUS_API_KEY")) {
-              fs.appendFileSync(shellConfig, envVars);
-              details.push(`  ✓ Added to ${path.basename(shellConfig)}`);
-              details.push(`  💡 Run: source ${shellConfig}`);
-            } else {
-              details.push(`  ⚠️  Already present in ${path.basename(shellConfig)}`);
-            }
-          }
-        }
-      }
-    }
-
-    // Step 5: LaunchAgent plist (macOS only)
-    if (process.platform === "darwin") {
-      const plistPath = path.join(
-        homeDir,
-        "Library",
-        "LaunchAgents",
-        "ai.openclaw.gateway.plist"
-      );
-
-      if (fs.existsSync(plistPath)) {
-        const addToPlist = await prompter.confirm({
-          message: "Add STRATUS_API_KEY to LaunchAgent?",
-          default: true,
-        });
-
-        if (addToPlist) {
-          // This requires plist manipulation - for now, just inform user
-          details.push("  💡 To add to LaunchAgent, run:");
-          details.push(`     ./install.sh`);
-          details.push("     (Uses PlistBuddy to update plist safely)");
-        }
-      }
-    }
 
     return {
       success: true,

@@ -13,7 +13,7 @@
   "environments": {
     "development": {
       "code_path": "/Users/andrewhathaway/code/formation/openclaw-stratus-x1-plugin",
-      "start_command": "echo 'No start command configured'",
+      "start_command": "cd /Users/andrewhathaway/code/formation/openclaw-stratus-x1-plugin && npm install -g @hathbanger/openclaw-stratus",
       "port": null,
       "env": {
         "NODE_ENV": "development"

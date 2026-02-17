@@ -6,6 +6,30 @@ import type {
   StratusRolloutResponse,
 } from "./types.js";
 
+/**
+ * SECURITY MANIFEST
+ *
+ * Environment Variables Accessed:
+ * - STRATUS_API_KEY: User's Stratus API key (optional, can use config instead)
+ *
+ * Network Endpoints:
+ * - https://dev.api.stratus.run/v1/embeddings (POST)
+ * - https://dev.api.stratus.run/v1/rollout (POST)
+ *
+ * Data Transmitted:
+ * - Authorization header: Bearer token (Stratus API key)
+ * - Request body: User-provided text, goals, and parameters
+ *
+ * Data Retention:
+ * - All data sent to Stratus API per their privacy policy: https://stratus.run/privacy
+ * - No local storage of credentials beyond process memory
+ *
+ * Security:
+ * - API key validated (must start with 'stratus_sk_')
+ * - HTTPS-only connections
+ * - Keys never logged or persisted to disk by this plugin
+ */
+
 export interface StratusClientConfig {
   apiKey: string;
   baseUrl: string;

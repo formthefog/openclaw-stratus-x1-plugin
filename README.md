@@ -30,9 +30,7 @@ Integrate Stratus V3 (X1-AC), a state-of-the-art action-conditioned JEPA (Joint-
 
 ```bash
 # 1. Install the plugin
-npm install -g @hathbanger/openclaw-stratus
-# or
-npx clawhub install stratus
+openclaw plugins install @formthefog/stratus
 
 # 2. Run setup (in any OpenClaw chat interface)
 /stratus setup
@@ -112,6 +110,18 @@ Or run verification manually:
 
 ---
 
+### Via OpenClaw (Recommended)
+
+```bash
+openclaw plugins install @formthefog/stratus
+```
+
+### Via npm
+
+```bash
+npm install -g @formthefog/stratus
+```
+
 ### From OpenClaw Monorepo
 
 If you're developing in the OpenClaw monorepo, the plugin is already available:
@@ -119,18 +129,6 @@ If you're developing in the OpenClaw monorepo, the plugin is already available:
 ```bash
 cd /path/to/openclaw
 pnpm install
-```
-
-### Via npm (Recommended)
-
-```bash
-npm install -g @hathbanger/openclaw-stratus
-```
-
-### Via ClawHub
-
-```bash
-npx clawhub install stratus
 ```
 
 ## Configuration

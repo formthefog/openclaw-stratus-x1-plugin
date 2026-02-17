@@ -2,6 +2,7 @@
   "id": "stratus",
   "providers": ["stratus"],
   "tools": ["stratus_embeddings", "stratus_rollout"],
+  "skills": ["./skills/stratus-info"],
   "configSchema": {
     "type": "object",
     "additionalProperties": false,
