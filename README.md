@@ -91,24 +91,7 @@ Hello from Stratus!
 
 ---
 
-## Manual Installation (Alternative)
-
-If you prefer manual setup, you can use the included script:
-
-```bash
-npx clawhub install stratus
-cd ~/.openclaw/plugins/stratus
-./install.sh
-openclaw gateway restart
-```
-
-Or run verification manually:
-
-```bash
-./verify.sh
-```
-
----
+## Alternative Installation Methods
 
 ### Via OpenClaw (Recommended)
 
@@ -116,11 +99,13 @@ Or run verification manually:
 openclaw plugins install @formthefog/stratus
 ```
 
-### Via npm
+### Via npm (for development or testing)
 
 ```bash
 npm install -g @formthefog/stratus
 ```
+
+> **Note:** When installing via npm, you'll still need to manually configure OpenClaw. The `openclaw plugins install` method is recommended as it handles setup automatically.
 
 ### From OpenClaw Monorepo
 
