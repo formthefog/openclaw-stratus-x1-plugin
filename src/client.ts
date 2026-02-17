@@ -13,8 +13,8 @@ import type {
  * - STRATUS_API_KEY: User's Stratus API key (optional, can use config instead)
  *
  * Network Endpoints:
- * - https://dev.api.stratus.run/v1/embeddings (POST)
- * - https://dev.api.stratus.run/v1/rollout (POST)
+ * - https://api.stratus.run/v1/embeddings (POST)
+ * - https://api.stratus.run/v1/rollout (POST)
  *
  * Data Transmitted:
  * - Authorization header: Bearer token (Stratus API key)
@@ -80,7 +80,7 @@ export class StratusClient {
 
 export function createStratusClient(config: StratusPluginConfig | undefined): StratusClient {
   const apiKey = config?.apiKey || process.env.STRATUS_API_KEY;
-  const baseUrl = config?.baseUrl || "https://dev.api.stratus.run";
+  const baseUrl = config?.baseUrl || "https://api.stratus.run";
 
   if (!apiKey) {
     throw new Error(

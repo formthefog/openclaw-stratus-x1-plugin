@@ -79,7 +79,7 @@ echo "  🔧 Updating OpenClaw configuration..."
 
 # Add models.providers.stratus if not present
 if ! jq -e '.models.providers.stratus' "$OPENCLAW_CONFIG" > /dev/null 2>&1; then
-    jq --arg baseUrl "https://dev.api.stratus.run/v1" \
+    jq --arg baseUrl "https://api.stratus.run/v1" \
        '.models.providers.stratus = {
           baseUrl: $baseUrl,
           api: "openai-completions",
@@ -156,7 +156,7 @@ if [[ -n "$SHELL_CONFIG" ]] && [[ "$EXISTING_KEY" != "$API_KEY" ]]; then
 
 # Stratus X1 configuration for OpenClaw
 export STRATUS_API_KEY=$API_KEY
-export STRATUS_BASE_URL=https://dev.api.stratus.run/v1
+export STRATUS_BASE_URL=https://api.stratus.run/v1
 EOF
             echo "    ✓ Added to $SHELL_CONFIG"
             echo "    💡 Run: source $SHELL_CONFIG"
@@ -179,8 +179,8 @@ if [[ "$OS" == "Darwin" ]] && [[ -f "$LAUNCHD_PLIST" ]]; then
             /usr/libexec/PlistBuddy -c "Add :EnvironmentVariables:STRATUS_API_KEY string $API_KEY" "$LAUNCHD_PLIST" 2>/dev/null || \
             /usr/libexec/PlistBuddy -c "Set :EnvironmentVariables:STRATUS_API_KEY $API_KEY" "$LAUNCHD_PLIST"
 
-            /usr/libexec/PlistBuddy -c "Add :EnvironmentVariables:STRATUS_BASE_URL string https://dev.api.stratus.run/v1" "$LAUNCHD_PLIST" 2>/dev/null || \
-            /usr/libexec/PlistBuddy -c "Set :EnvironmentVariables:STRATUS_BASE_URL https://dev.api.stratus.run/v1" "$LAUNCHD_PLIST"
+            /usr/libexec/PlistBuddy -c "Add :EnvironmentVariables:STRATUS_BASE_URL string https://api.stratus.run/v1" "$LAUNCHD_PLIST" 2>/dev/null || \
+            /usr/libexec/PlistBuddy -c "Set :EnvironmentVariables:STRATUS_BASE_URL https://api.stratus.run/v1" "$LAUNCHD_PLIST"
 
             echo "    ✓ Updated LaunchAgent plist"
             echo "    💡 Restart gateway: openclaw gateway stop && openclaw gateway install"

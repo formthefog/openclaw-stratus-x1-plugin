@@ -43,7 +43,7 @@ messages: Unexpected role 'developer'. Allowed roles are 'user' or 'assistant'
   "profiles": [
     {
       "provider": "stratus",
-      "baseUrl": "https://dev.api.stratus.run/v1",
+      "baseUrl": "https://api.stratus.run/v1",
       "apiKey": "stratus_sk_..."
     }
   ]
@@ -62,7 +62,7 @@ cat ~/.openclaw/openclaw.json | grep -A 10 stratus
 cat ~/.openclaw/agents/main/agent/auth-profiles.json
 
 # Test endpoint directly
-curl https://dev.api.stratus.run/v1/chat/completions \
+curl https://api.stratus.run/v1/chat/completions \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer stratus_sk_..." \
   -d '{
@@ -115,7 +115,7 @@ When Stratus integration fails:
 4. ✅ Test with manual curl
 5. ✅ Check gateway logs: `openclaw gateway logs`
 6. ✅ Restart gateway: `openclaw gateway restart`
-7. ✅ Verify endpoint: `https://dev.api.stratus.run/v1`
+7. ✅ Verify endpoint: `https://api.stratus.run/v1`
 
 ### Role Field Validation
 
@@ -130,7 +130,7 @@ When Stratus integration fails:
 ```json
 {
   "provider": "stratus",
-  "baseUrl": "https://dev.api.stratus.run/v1",
+  "baseUrl": "https://api.stratus.run/v1",
   "apiKey": "stratus_sk_...",
   "model": "stratus-x1ac-base-claude-sonnet-4-5"
 }
@@ -175,5 +175,5 @@ When Stratus integration fails:
 
 - [TROUBLESHOOTING.md](../TROUBLESHOOTING.md) - Detailed debugging guide
 - [README.md](../README.md) - Plugin documentation
-- Stratus API: https://dev.api.stratus.run
+- Stratus API: https://api.stratus.run
 - Stratus Docs: https://stratus.run/docs

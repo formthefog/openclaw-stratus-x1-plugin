@@ -75,7 +75,7 @@ export async function setupStratus(prompter?: any): Promise<SetupResult> {
       }
       if (!config.models.providers.stratus) {
         config.models.providers.stratus = {
-          baseUrl: "https://dev.api.stratus.run/v1",
+          baseUrl: "https://api.stratus.run/v1",
           api: "openai-completions",
           models: [
             {

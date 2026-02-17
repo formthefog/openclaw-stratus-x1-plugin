@@ -18,7 +18,7 @@
       },
       "baseUrl": {
         "type": "string",
-        "default": "https://dev.api.stratus.run",
+        "default": "https://api.stratus.run",
         "description": "Stratus API base URL"
       },
       "provider": {

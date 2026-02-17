@@ -37,7 +37,7 @@ vim ~/.openclaw/agents/main/agent/auth-profiles.json
   "profiles": [
     {
       "provider": "stratus",
-      "baseUrl": "https://dev.api.stratus.run/v1",
+      "baseUrl": "https://api.stratus.run/v1",
       "apiKey": "stratus_sk_your_actual_key_here"
     }
   ]
@@ -53,7 +53,7 @@ openclaw gateway restart
 4. Verify auth is working with manual curl:
 
 ```bash
-curl https://dev.api.stratus.run/v1/chat/completions \
+curl https://api.stratus.run/v1/chat/completions \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer stratus_sk_your_actual_key_here" \
   -d '{
@@ -200,7 +200,7 @@ When Stratus integration isn't working:
 4. **Test with curl**: Use manual curl command (see above)
 5. **Check gateway logs**: `openclaw gateway logs`
 6. **Restart gateway**: `openclaw gateway restart`
-7. **Verify endpoint**: Should be `https://dev.api.stratus.run/v1`
+7. **Verify endpoint**: Should be `https://api.stratus.run/v1`
 
 ---
 

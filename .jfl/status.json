@@ -1,26 +1,24 @@
 {
   "service": "openclaw-stratus",
-  "status": "development",
-  "health": "partially-working",
-  "last_updated": "2026-02-15T19:25:00.000Z",
+  "status": "production-ready",
+  "health": "healthy",
+  "last_updated": "2026-02-17T00:00:00.000Z",
   "recent_changes": [
-    "Resolved authentication issue - auth cache updated",
-    "API key validated, balance confirmed (17784 credits)",
-    "Identified role field compatibility blocker",
-    "Documented authentication breakthrough in TROUBLESHOOTING.md",
-    "Created INTEGRATION_STATUS.md knowledge doc"
+    "Updated all API endpoints to production (api.stratus.run)",
+    "Removed dev endpoint references from all configuration files",
+    "Updated documentation to reflect production endpoint",
+    "Updated install scripts and setup wizards",
+    "Configuration now points to stable production API"
   ],
-  "current_blockers": [
-    "Role field validation: OpenClaw sends 'developer', Stratus expects 'user'/'assistant'"
-  ],
+  "current_blockers": [],
   "next_steps": [
-    "Implement role mapping in src/client.ts",
-    "Test chat completion with role mapping",
-    "Run full integration test"
+    "Test with production endpoint",
+    "Monitor API stability",
+    "Update deployment documentation"
   ],
   "authentication": {
     "status": "working",
-    "endpoint": "dev.api.stratus.run",
+    "endpoint": "api.stratus.run",
     "balance": "17784.00 credits",
     "last_verified": "2026-02-15T19:20:00.000Z"
   }

@@ -156,7 +156,7 @@ const response = await openai.chat.completions.create({
   model: "stratus-x1ac-base-gpt-4o",
   messages: [...]
 }, {
-  baseURL: "https://dev.api.stratus.run/v1"
+  baseURL: "https://api.stratus.run/v1"
 });
 ```
 

@@ -154,7 +154,7 @@ Edit `~/.openclaw/openclaw.json`:
     "stratus": {
       "enabled": true,
       "apiKey": "${STRATUS_API_KEY}",
-      "baseUrl": "https://dev.api.stratus.run",
+      "baseUrl": "https://api.stratus.run",
       "provider": {
         "enabled": true,
         "defaultModel": "stratus-x1ac-base-claude-sonnet-4-5"
