@@ -16,6 +16,8 @@ Integrate Stratus V3 (X1-AC), a state-of-the-art action-conditioned JEPA (Joint-
 - **Secure**: API key authentication with automatic validation
 - **Opt-in Tools**: Tools are optional and require explicit allowlisting
 
+> See [SECURITY.md](./SECURITY.md) for a full accounting of credentials accessed, network calls made, and files written.
+
 ## Support
 
 - **Documentation**: [https://stratus.run/docs](https://stratus.run/docs)
