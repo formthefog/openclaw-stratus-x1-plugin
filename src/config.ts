@@ -3,12 +3,18 @@ import type { StratusPluginConfig } from "./types.js";
 
 export const StratusConfigSchema: OpenClawPluginConfigSchema = {
   parse(value: unknown): StratusPluginConfig {
-    const raw =
+    const entry =
       value && typeof value === "object" && !Array.isArray(value)
         ? (value as Record<string, unknown>)
         : {};
 
-    const enabled = typeof raw.enabled === "boolean" ? raw.enabled : true;
+    const enabled = typeof entry.enabled === "boolean" ? entry.enabled : true;
+
+    const raw =
+      entry.config && typeof entry.config === "object" && !Array.isArray(entry.config)
+        ? (entry.config as Record<string, unknown>)
+        : {};
+
     const apiKey = typeof raw.apiKey === "string" ? raw.apiKey : process.env.STRATUS_API_KEY;
     const baseUrl = typeof raw.baseUrl === "string" ? raw.baseUrl : "https://api.stratus.run";
 
@@ -57,14 +63,14 @@ export const StratusConfigSchema: OpenClawPluginConfigSchema = {
   },
   uiHints: {
     enabled: { label: "Enabled" },
-    apiKey: { label: "API Key", sensitive: true },
-    baseUrl: { label: "Base URL", placeholder: "https://api.stratus.run" },
-    "provider.enabled": { label: "Provider Enabled" },
-    "provider.defaultModel": {
+    "config.apiKey": { label: "API Key", sensitive: true },
+    "config.baseUrl": { label: "Base URL", placeholder: "https://api.stratus.run" },
+    "config.provider.enabled": { label: "Provider Enabled" },
+    "config.provider.defaultModel": {
       label: "Default Model",
       placeholder: "stratus-x1ac-base-claude-sonnet-4-5",
     },
-    "tools.embeddings.enabled": { label: "Embeddings Tool Enabled" },
-    "tools.rollout.enabled": { label: "Rollout Tool Enabled" },
+    "config.tools.embeddings.enabled": { label: "Embeddings Tool Enabled" },
+    "config.tools.rollout.enabled": { label: "Rollout Tool Enabled" },
   },
 };

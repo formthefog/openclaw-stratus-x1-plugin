@@ -214,21 +214,32 @@ Edit `~/.openclaw/openclaw.json`:
 ```json
 {
   "plugins": {
-    "stratus": {
-      "enabled": true,
-      "apiKey": "${STRATUS_API_KEY}",
-      "baseUrl": "https://api.stratus.run",
-      "provider": {
+    "entries": {
+      "stratus": {
         "enabled": true,
-        "defaultModel": "stratus-x1ac-base-claude-sonnet-4-5"
-      },
-      "tools": {
-        "embeddings": { "enabled": true },
-        "rollout": { "enabled": true }
+        "config": {
+          "apiKey": "${STRATUS_API_KEY}",
+          "baseUrl": "https://api.stratus.run",
+          "provider": {
+            "enabled": true,
+            "defaultModel": "stratus-x1ac-base-claude-sonnet-4-5"
+          },
+          "tools": {
+            "embeddings": { "enabled": true },
+            "rollout": { "enabled": true }
+          }
+        }
       }
     }
   }
 }
+```
+
+> **Important:** OpenClaw's plugin config schema requires plugin-specific settings
+> to be nested under a `config` key within `plugins.entries.<id>`. Only `enabled`
+> and `config` are valid top-level keys per entry. Placing keys like `apiKey` or
+> `tools` at the top level will cause a config validation error and prevent the
+> gateway from starting.
 ```
 
 ## Usage
@@ -523,18 +534,27 @@ This follows UNIX philosophy: clean separation, composable interfaces, transpare
 
 ### Configuration Schema
 
+OpenClaw plugin entries use `{ enabled, config }` at the top level. The `config`
+object holds all plugin-specific settings:
+
 ```typescript
+// What OpenClaw stores in plugins.entries.stratus
+interface PluginEntryConfig {
+  enabled?: boolean;
+  config?: StratusPluginConfig;
+}
+
+// Plugin-specific config (nested under "config" key)
 interface StratusPluginConfig {
-  enabled: boolean; // Enable plugin
-  apiKey: string; // API key (or env var)
-  baseUrl: string; // API base URL
-  provider: {
-    enabled: boolean; // Enable provider registration
-    defaultModel: string; // Default model
+  apiKey?: string;   // API key (or use STRATUS_API_KEY env var)
+  baseUrl?: string;  // API base URL
+  provider?: {
+    enabled?: boolean;     // Enable provider registration
+    defaultModel?: string; // Default model
   };
-  tools: {
-    embeddings: { enabled: boolean };
-    rollout: { enabled: boolean };
+  tools?: {
+    embeddings?: { enabled?: boolean };
+    rollout?: { enabled?: boolean };
   };
 }
 ```
