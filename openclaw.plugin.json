@@ -12,46 +12,52 @@
         "default": true,
         "description": "Enable Stratus plugin"
       },
-      "apiKey": {
-        "type": "string",
-        "description": "Stratus API key (or use STRATUS_API_KEY env var)"
-      },
-      "baseUrl": {
-        "type": "string",
-        "default": "https://api.stratus.run",
-        "description": "Stratus API base URL"
-      },
-      "provider": {
+      "config": {
         "type": "object",
+        "description": "Stratus plugin configuration",
         "properties": {
-          "enabled": {
-            "type": "boolean",
-            "default": true
-          },
-          "defaultModel": {
+          "apiKey": {
             "type": "string",
-            "default": "stratus-x1ac-base-claude-sonnet-4-5"
-          }
-        }
-      },
-      "tools": {
-        "type": "object",
-        "properties": {
-          "embeddings": {
+            "description": "Stratus API key (or use STRATUS_API_KEY env var)"
+          },
+          "baseUrl": {
+            "type": "string",
+            "default": "https://api.stratus.run",
+            "description": "Stratus API base URL"
+          },
+          "provider": {
             "type": "object",
             "properties": {
               "enabled": {
                 "type": "boolean",
                 "default": true
+              },
+              "defaultModel": {
+                "type": "string",
+                "default": "stratus-x1ac-base-claude-sonnet-4-5"
               }
             }
           },
-          "rollout": {
+          "tools": {
             "type": "object",
             "properties": {
-              "enabled": {
-                "type": "boolean",
-                "default": true
+              "embeddings": {
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "type": "boolean",
+                    "default": true
+                  }
+                }
+              },
+              "rollout": {
+                "type": "object",
+                "properties": {
+                  "enabled": {
+                    "type": "boolean",
+                    "default": true
+                  }
+                }
               }
             }
           }
