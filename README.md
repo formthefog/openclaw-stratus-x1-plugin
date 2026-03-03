@@ -67,54 +67,6 @@ openclaw plugins install @formthefog/stratus
 
 ---
 
-## Using the API directly
-
-Stratus is drop-in compatible with OpenAI and Anthropic SDKs. Just change the `baseURL` and use your `STRATUS_API_KEY`.
-
-**OpenAI SDK (TypeScript)**
-```typescript
-import OpenAI from 'openai';
-
-const client = new OpenAI({
-  baseURL: 'https://api.stratus.run/v1',
-  apiKey: process.env.STRATUS_API_KEY
-});
-
-const response = await client.chat.completions.create({
-  model: 'stratus-x1ac-base-claude-sonnet-4-5',
-  messages: [{ role: 'user', content: 'Plan a route through 20 cities' }]
-});
-```
-
-**Anthropic SDK (TypeScript)**
-```typescript
-import Anthropic from '@anthropic-ai/sdk';
-
-const client = new Anthropic({
-  baseURL: 'https://api.stratus.run/v1',
-  apiKey: process.env.STRATUS_API_KEY
-});
-
-const response = await client.messages.create({
-  model: 'stratus-x1ac-base-claude-sonnet-4-5',
-  max_tokens: 1024,
-  messages: [{ role: 'user', content: 'Plan a route through 20 cities' }]
-});
-```
-
-**cURL**
-```bash
-curl https://api.stratus.run/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer $STRATUS_API_KEY" \
-  -d '{
-    "model": "stratus-x1ac-base-claude-sonnet-4-5",
-    "messages": [{ "role": "user", "content": "Plan a route through 20 cities" }]
-  }'
-```
-
----
-
 ## Available Commands
 
 Use these slash commands in any OpenClaw chat (TUI, Telegram, Discord, etc.):
