@@ -10,7 +10,7 @@ Integrate Stratus V3 (X1-AC), a state-of-the-art action-conditioned JEPA (Joint-
 
 ## Features
 
-- **Model Provider**: Use Stratus models (GPT-4o or Claude Sonnet 4 backends) for agent conversations
+- **Model Provider**: Use Stratus models (GPT-4o, Claude 4.x, or Gemini backends) for agent conversations
 - **Embeddings Tool**: Generate 768-dimensional semantic state embeddings
 - **Rollout Tool**: Multi-step task planning with action sequence prediction
 - **Secure**: API key authentication with automatic validation
@@ -124,6 +124,7 @@ Use these slash commands in any OpenClaw chat (TUI, Telegram, Discord, etc.):
 | `/stratus` | Show help |
 | `/stratus setup` | Interactive configuration wizard |
 | `/stratus verify` | Verify plugin is configured correctly |
+| `/stratus models` | List all available models (live from API) |
 
 ---
 
@@ -262,9 +263,9 @@ openclaw agent --model stratus/stratus-x1ac-small-claude-haiku-4-5 \
   "Quick question: what is JEPA?"
 ```
 
-**Available Models: 75 Total**
+**Available Models: Dynamic (75+ models)**
 
-The plugin registers all 75 Stratus chat completion models:
+Models are fetched live from the Stratus API on startup and refreshed automatically. Run `/stratus models` to see the current full list. The plugin supports all models returned by the API.
 
 **Model Format:** `stratus-x1ac-{size}-{llm}`
 
@@ -280,9 +281,12 @@ The plugin registers all 75 Stratus chat completion models:
 
 **Anthropic LLMs (Claude 4.x):**
 
+- `claude-sonnet-4-6` - Claude 4.6 Sonnet (latest)
+- `claude-opus-4-6` - Claude 4.6 Opus (latest, high performance)
 - `claude-sonnet-4-5` - Claude 4.5 Sonnet (recommended)
 - `claude-opus-4-5` - Claude 4.5 Opus
 - `claude-haiku-4-5` - Claude 4.5 Haiku (fast)
+- `claude-opus-4-1` - Claude 4.1 Opus
 - `claude-sonnet-4` - Claude 4 Sonnet
 - `claude-opus-4` - Claude 4 Opus
 
@@ -290,11 +294,20 @@ The plugin registers all 75 Stratus chat completion models:
 
 - `claude-3-7-sonnet`, `claude-3-5-sonnet`, `claude-3-opus`, `claude-3-sonnet`, `claude-3-haiku`
 
+**Google LLMs:**
+
+- `gemini-2.0-flash` - Gemini 2.0 Flash (1M context)
+- `gemini-1.5-pro` - Gemini 1.5 Pro (2M context)
+- `gemini-1.5-flash` - Gemini 1.5 Flash (1M context)
+- `gemini-pro` - Gemini Pro
+
 **Examples:**
 
 - `stratus/stratus-x1ac-base-claude-sonnet-4-5` (recommended)
+- `stratus/stratus-x1ac-base-claude-sonnet-4-6` (latest Claude)
 - `stratus/stratus-x1ac-base-gpt-4o`
-- `stratus/stratus-x1ac-large-claude-opus-4-5` (high performance)
+- `stratus/stratus-x1ac-base-gemini-2.0-flash` (1M context window)
+- `stratus/stratus-x1ac-large-claude-opus-4-6` (high performance)
 - `stratus/stratus-x1ac-small-gpt-4o-mini` (development/testing)
 
 ### 2. Use Stratus Tools

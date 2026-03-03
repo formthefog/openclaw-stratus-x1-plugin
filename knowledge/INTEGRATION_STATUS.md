@@ -1,26 +1,67 @@
 # Stratus API Integration Status
 
-Last Updated: 2026-02-15
+Last Updated: 2026-03-03
 
-## Current Status: AUTHENTICATION WORKING ✅
+## Current Status: FULLY OPERATIONAL ✅
 
 ### What's Working
 
-1. **API Endpoint**: `dev.api.stratus.run` responding correctly
-2. **Authentication**: API key validated successfully
-3. **User Balance**: 17784.00 credits confirmed
-4. **Model Availability**: `stratus-x1ac-base-claude-sonnet-4-5` ready
+1. **API Endpoint**: `https://api.stratus.run/v1` responding correctly
+2. **Authentication**: API key (`stratus_sk_*`) validated successfully
+3. **Model Provider**: All models served dynamically via `/v1/models`
+4. **Chat Completions**: `/v1/chat/completions` working (role mapping resolved server-side)
+5. **Embeddings**: `/v1/embeddings` endpoint operational
+6. **Rollout**: `/v1/rollout` endpoint operational
+7. **Dynamic Model Discovery**: API refreshes model list live from OpenAI, Anthropic, and Google
 
-### Current Blocker: Role Field Compatibility ⚠️
+---
 
-**Issue**: OpenClaw sends `role: "developer"` but Stratus/Anthropic expects `role: "user"` or `role: "assistant"`
+## Role Field Compatibility — RESOLVED ✅
 
-**Error Message**:
-```
-messages: Unexpected role 'developer'. Allowed roles are 'user' or 'assistant'
-```
+**Previously**: OpenClaw sends `role: "developer"` but Stratus/Anthropic expected `role: "user"` or `role: "assistant"`
 
-**Root Cause**: OpenClaw uses Anthropic-specific role field values, but the Stratus API (wrapping Anthropic's Messages API) requires standard OpenAI-compatible role values when using the `/v1/chat/completions` endpoint.
+**Resolution** (2026-03-03): The Stratus API now accepts the `developer` role natively and normalizes it server-side before forwarding to Anthropic. No plugin-level role mapping required.
+
+API accepts: `system`, `user`, `assistant`, `tool`, `developer`
+
+---
+
+## Model Availability (as of 2026-03-03)
+
+### New Backends Added Since 2026-02-15
+
+**Google Gemini** — now routable:
+- `stratus-x1ac-{size}-gemini-2.0-flash` (1M context)
+- `stratus-x1ac-{size}-gemini-1.5-pro` (2M context)
+- `stratus-x1ac-{size}-gemini-1.5-flash` (1M context)
+- `stratus-x1ac-{size}-gemini-pro`
+
+**New Claude models**:
+- `stratus-x1ac-{size}-claude-sonnet-4-6` (via OpenRouter)
+- `stratus-x1ac-{size}-claude-opus-4-6` (via OpenRouter)
+- `stratus-x1ac-{size}-claude-opus-4-1`
+
+### Model Count
+
+The model list is **dynamically discovered** at startup and refreshed hourly. The count of 75 static models is now a floor — live counts will exceed this as Gemini and OpenRouter-discovered models are included.
+
+---
+
+## API Endpoints (Current)
+
+| Endpoint | Method | Description |
+|---|---|---|
+| `/health` | GET | Health check |
+| `/v1/models` | GET | List available models (dynamic) |
+| `/v1/chat/completions` | POST | Chat completions (OpenAI format) |
+| `/v1/messages` | POST | Chat completions (Anthropic Messages format) |
+| `/v1/embeddings` | POST | Generate state embeddings |
+| `/v1/rollout` | POST | Multi-step action sequence planning |
+| `/v1/account/llm-keys` | POST/GET/DELETE | Manage vault-stored LLM keys |
+| `/v1/credits/packages` | GET | List credit packages |
+| `/v1/credits/purchase/{package}` | POST | Purchase credits |
+
+---
 
 ## Authentication Breakthrough (2026-02-15)
 
@@ -37,18 +78,7 @@ messages: Unexpected role 'developer'. Allowed roles are 'user' or 'assistant'
 ### Solution Applied
 
 1. Located cached API key in `~/.openclaw/agents/main/agent/auth-profiles.json`
-2. Updated auth cache with Stratus credentials:
-```json
-{
-  "profiles": [
-    {
-      "provider": "stratus",
-      "baseUrl": "https://api.stratus.run/v1",
-      "apiKey": "stratus_sk_..."
-    }
-  ]
-}
-```
+2. Updated auth cache with Stratus credentials
 3. Restarted OpenClaw gateway: `openclaw gateway restart`
 4. Verified with manual curl - received proper API response
 
@@ -72,41 +102,9 @@ curl https://api.stratus.run/v1/chat/completions \
   }'
 ```
 
-## Next Steps
+---
 
-### Immediate (High Priority)
-
-1. **Implement role mapping in Stratus plugin** ✅ RECOMMENDED
-   - Add `normalizeRole()` function in `src/client.ts`
-   - Transform `developer` → `system` before API calls
-   - Maintains compatibility with OpenClaw's Anthropic-style messages
-
-2. **Test with simple chat completion**
-   - Verify role mapping works
-   - Confirm Claude Sonnet 4.5 responds correctly
-   - Check credit deduction
-
-### Future Enhancements
-
-1. **File OpenClaw bug report**
-   - Document auth cache sync issue
-   - Request automatic sync on gateway restart
-   - Propose role mapping for `openai-completions` providers
-
-2. **Consider native Anthropic Messages API**
-   - Switch from `/v1/chat/completions` to `/v1/messages`
-   - Would natively support `developer` role
-   - May require more plugin changes
-
-## Lessons Learned
-
-### Auth Cache Staleness
-
-**Problem**: Config changes don't automatically propagate to auth cache
-**Impact**: Gateway continues using old/invalid credentials
-**Solution**: Always update both files + restart gateway
-
-### Debugging Checklist
+## Debugging Checklist
 
 When Stratus integration fails:
 1. ✅ Verify API key format (`stratus_sk_*`)
@@ -117,59 +115,19 @@ When Stratus integration fails:
 6. ✅ Restart gateway: `openclaw gateway restart`
 7. ✅ Verify endpoint: `https://api.stratus.run/v1`
 
-### Role Field Validation
-
-**Problem**: OpenClaw uses Anthropic-specific role values
-**Impact**: OpenAI-compatible APIs reject requests
-**Solution**: Plugin-level role mapping for maximum compatibility
-
-## Technical Details
-
-### API Configuration
-
-```json
-{
-  "provider": "stratus",
-  "baseUrl": "https://api.stratus.run/v1",
-  "apiKey": "stratus_sk_...",
-  "model": "stratus-x1ac-base-claude-sonnet-4-5"
-}
-```
-
-### Role Mapping Requirements
-
-| OpenClaw Role | Stratus API Expects | Notes |
-|---------------|---------------------|-------|
-| `developer` | `system` or `user` | Map to `system` for OpenAI format |
-| `user` | `user` | Pass through |
-| `assistant` | `assistant` | Pass through |
-
-### Error Evolution
-
-1. **Phase 1**: Silent fallback to Anthropic
-   - **Cause**: Auth cache not updated
-   - **Symptom**: SIGBART uses Anthropic despite config
-   - **Fix**: Update auth cache + restart
-
-2. **Phase 2**: 401 Unauthorized (RESOLVED ✅)
-   - **Cause**: Invalid/missing API key in auth cache
-   - **Symptom**: API returns 401
-   - **Fix**: Add valid API key to auth cache
-
-3. **Phase 3**: Role field validation (CURRENT ⚠️)
-   - **Cause**: `developer` role not supported in OpenAI format
-   - **Symptom**: API returns role validation error
-   - **Fix**: Implement role mapping in plugin
+---
 
 ## Success Metrics
 
 - [x] API endpoint reachable
 - [x] Authentication working
-- [x] User balance verified
-- [x] Model available
-- [ ] Chat completion successful (blocked by role mapping)
-- [ ] Credit deduction working
-- [ ] Full integration test passing
+- [x] Model list dynamically fetched
+- [x] Chat completion successful
+- [x] Role field compatibility (resolved server-side)
+- [x] Embeddings endpoint working
+- [x] Rollout endpoint working
+- [x] Google Gemini models available
+- [x] Claude 4.6 models available
 
 ## References
 

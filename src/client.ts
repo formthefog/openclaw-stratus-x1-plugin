@@ -76,6 +76,25 @@ export class StratusClient {
       return_intermediate: params.return_intermediate ?? true,
     });
   }
+
+  async listModels(): Promise<{ object: string; data: Array<{ id: string; object: string; created: number; owned_by: string }> }> {
+    const url = `${this.config.baseUrl}/v1/models`;
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${this.config.apiKey}`,
+      },
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(
+        `Stratus API error (${response.status}): ${errorText || response.statusText}`,
+      );
+    }
+
+    return response.json();
+  }
 }
 
 export function createStratusClient(config: StratusPluginConfig | undefined): StratusClient {

@@ -4,6 +4,9 @@ import type { StratusPluginConfig } from "./src/types.js";
 import { createStratusClient } from "./src/client.js";
 import { StratusConfigSchema } from "./src/config.js";
 import { setupStratus } from "./src/setup.js";
+import { readFileSync, writeFileSync, existsSync } from "fs";
+import { join } from "path";
+import { homedir } from "os";
 
 const PROVIDER_ID = "stratus";
 const PROVIDER_LABEL = "Stratus";
@@ -26,59 +29,108 @@ function buildModelDefinition(params: {
   };
 }
 
-const STRATUS_SIZES = ["small", "base", "large", "xl", "huge"] as const;
+// Model metadata for naming/context/tokens (fallback if API doesn't provide details)
+const MODEL_METADATA: Record<string, { name: string; context: number; tokens: number }> = {
+  "gpt-4o": { name: "GPT-4o", context: 128000, tokens: 8192 },
+  "gpt-4o-mini": { name: "GPT-4o Mini", context: 128000, tokens: 8192 },
+  "gpt-4-turbo": { name: "GPT-4 Turbo", context: 128000, tokens: 4096 },
+  "gpt-4": { name: "GPT-4", context: 8192, tokens: 4096 },
+  "gpt-3.5-turbo": { name: "GPT-3.5 Turbo", context: 16385, tokens: 4096 },
+  "claude-sonnet-4-6": { name: "Claude 4.6 Sonnet", context: 200000, tokens: 8192 },
+  "claude-opus-4-6": { name: "Claude 4.6 Opus", context: 200000, tokens: 8192 },
+  "claude-sonnet-4-5": { name: "Claude 4.5 Sonnet", context: 200000, tokens: 8192 },
+  "claude-opus-4-5": { name: "Claude 4.5 Opus", context: 200000, tokens: 8192 },
+  "claude-haiku-4-5": { name: "Claude 4.5 Haiku", context: 200000, tokens: 8192 },
+  "claude-sonnet-4": { name: "Claude 4 Sonnet", context: 200000, tokens: 8192 },
+  "claude-opus-4-1": { name: "Claude 4.1 Opus", context: 200000, tokens: 8192 },
+  "claude-opus-4": { name: "Claude 4 Opus", context: 200000, tokens: 8192 },
+  "claude-3-7-sonnet": { name: "Claude 3.7 Sonnet", context: 200000, tokens: 8192 },
+  "claude-3-5-sonnet": { name: "Claude 3.5 Sonnet", context: 200000, tokens: 8192 },
+  "claude-3-opus": { name: "Claude 3 Opus", context: 200000, tokens: 4096 },
+  "claude-3-sonnet": { name: "Claude 3 Sonnet", context: 200000, tokens: 4096 },
+  "claude-3-haiku": { name: "Claude 3 Haiku", context: 200000, tokens: 4096 },
+  "gemini-2.0-flash": { name: "Gemini 2.0 Flash", context: 1048576, tokens: 8192 },
+  "gemini-1.5-pro": { name: "Gemini 1.5 Pro", context: 2097152, tokens: 8192 },
+  "gemini-1.5-flash": { name: "Gemini 1.5 Flash", context: 1048576, tokens: 8192 },
+  "gemini-pro": { name: "Gemini Pro", context: 32768, tokens: 8192 },
+};
 
-const OPENAI_MODELS = [
-  { id: "gpt-4o", name: "GPT-4o", context: 128000, tokens: 8192 },
-  { id: "gpt-4o-mini", name: "GPT-4o Mini", context: 128000, tokens: 8192 },
-  { id: "gpt-4-turbo", name: "GPT-4 Turbo", context: 128000, tokens: 4096 },
-  { id: "gpt-4", name: "GPT-4", context: 8192, tokens: 4096 },
-  { id: "gpt-3.5-turbo", name: "GPT-3.5 Turbo", context: 16385, tokens: 4096 },
-] as const;
-
-const ANTHROPIC_MODELS = [
-  { id: "claude-sonnet-4-5", name: "Claude 4.5 Sonnet", context: 200000, tokens: 8192 },
-  { id: "claude-opus-4-5", name: "Claude 4.5 Opus", context: 200000, tokens: 8192 },
-  { id: "claude-sonnet-4", name: "Claude 4 Sonnet", context: 200000, tokens: 8192 },
-  { id: "claude-opus-4", name: "Claude 4 Opus", context: 200000, tokens: 8192 },
-  { id: "claude-haiku-4-5", name: "Claude 4.5 Haiku", context: 200000, tokens: 8192 },
-  { id: "claude-3-7-sonnet", name: "Claude 3.7 Sonnet", context: 200000, tokens: 8192 },
-  { id: "claude-3-5-sonnet", name: "Claude 3.5 Sonnet", context: 200000, tokens: 8192 },
-  { id: "claude-3-opus", name: "Claude 3 Opus", context: 200000, tokens: 4096 },
-  { id: "claude-3-sonnet", name: "Claude 3 Sonnet", context: 200000, tokens: 4096 },
-  { id: "claude-3-haiku", name: "Claude 3 Haiku", context: 200000, tokens: 4096 },
-] as const;
-
-function generateAllModels() {
-  const models = [];
-
-  for (const size of STRATUS_SIZES) {
-    const sizeLabel = size.charAt(0).toUpperCase() + size.slice(1);
-
-    for (const llm of OPENAI_MODELS) {
-      models.push(
-        buildModelDefinition({
-          id: `stratus-x1ac-${size}-${llm.id}`,
-          name: `Stratus X1AC ${sizeLabel} (${llm.name})`,
-          contextWindow: llm.context,
-          maxTokens: llm.tokens,
-        }),
-      );
-    }
-
-    for (const llm of ANTHROPIC_MODELS) {
-      models.push(
-        buildModelDefinition({
-          id: `stratus-x1ac-${size}-${llm.id}`,
-          name: `Stratus X1AC ${sizeLabel} (${llm.name})`,
-          contextWindow: llm.context,
-          maxTokens: llm.tokens,
-        }),
-      );
-    }
+function generateModelName(modelId: string): string {
+  // Parse model ID like "stratus-x1ac-base-claude-sonnet-4-5"
+  const parts = modelId.split("-");
+  
+  // Extract size (small/base/large/xl/huge)
+  let size = "";
+  let baseModelId = "";
+  
+  if (parts.length >= 4 && parts[0] === "stratus" && parts[1] === "x1ac") {
+    size = parts[2];
+    baseModelId = parts.slice(3).join("-");
+  } else {
+    // Fallback for non-standard format
+    return modelId;
   }
+  
+  const sizeLabel = size.charAt(0).toUpperCase() + size.slice(1);
+  const metadata = MODEL_METADATA[baseModelId];
+  
+  if (metadata) {
+    return `Stratus X1AC ${sizeLabel} (${metadata.name})`;
+  }
+  
+  // Fallback: capitalize base model
+  return `Stratus X1AC ${sizeLabel} (${baseModelId})`;
+}
 
-  return models;
+async function generateAllModels(apiKey?: string, baseUrl?: string) {
+  const root = (baseUrl || DEFAULT_BASE_URL).replace(/\/v\d+\/?$/, "");
+  try {
+    const url = `${root}/v1/models`;
+    const headers: Record<string, string> = {};
+    if (apiKey) headers["Authorization"] = `Bearer ${apiKey}`;
+
+    const response = await fetch(url, { headers, signal: AbortSignal.timeout(5000) });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json() as { data: Array<{ id: string }> };
+
+    return data.data.map((model) => {
+      const modelId = model.id;
+      const baseModelId = modelId.replace(/^stratus-x1ac-(small|base|large|xl|huge)-/, "");
+      const metadata = MODEL_METADATA[baseModelId];
+      return buildModelDefinition({
+        id: modelId,
+        name: generateModelName(modelId),
+        contextWindow: metadata?.context || 128000,
+        maxTokens: metadata?.tokens || 8192,
+      });
+    });
+  } catch (error) {
+    console.error("[stratus] Failed to fetch models from API:", error);
+    return [
+      buildModelDefinition({
+        id: "stratus-x1ac-base-claude-sonnet-4-5",
+        name: "Stratus X1AC Base (Claude 4.5 Sonnet)",
+        contextWindow: 200000,
+        maxTokens: 8192,
+      }),
+    ];
+  }
+}
+
+async function updateStoredModels(models: ReturnType<typeof buildModelDefinition>[]) {
+  const configPath = join(homedir(), ".openclaw", "openclaw.json");
+  if (!existsSync(configPath)) return;
+
+  try {
+    const raw = readFileSync(configPath, "utf-8");
+    const config = JSON.parse(raw);
+    if (!config?.models?.providers?.stratus) return;
+
+    config.models.providers.stratus.models = models;
+    writeFileSync(configPath, JSON.stringify(config, null, 2));
+  } catch {
+    // Silent fail — stale models are better than a crash
+  }
 }
 
 const stratusPlugin = {
@@ -115,6 +167,9 @@ const stratusPlugin = {
             });
 
             const profileId = `${PROVIDER_ID}:default`;
+            
+            // Fetch all available models
+            const models = await generateAllModels(apiKey, DEFAULT_BASE_URL);
 
             return {
               profiles: [
@@ -134,16 +189,7 @@ const stratusPlugin = {
                       baseUrl: DEFAULT_BASE_URL,
                       apiKey: apiKey,
                       api: "openai-completions",
-                      models: generateAllModels(),
-                    },
-                  },
-                },
-                agents: {
-                  defaults: {
-                    models: {
-                      [`${PROVIDER_ID}/stratus-x1ac-base-claude-sonnet-4-5`]: {
-                        alias: "stratus",
-                      },
+                      models: models,
                     },
                   },
                 },
@@ -161,17 +207,30 @@ const stratusPlugin = {
                 "  • Policy Head (X1-AC): Selects optimal actions toward goals",
                 "  • Collective Network: Agents learn from each other in real-time",
                 "",
+                `Loaded ${models.length} available models from Stratus API`,
+                "  Backends: OpenAI GPT-4o, Anthropic Claude 4.x, Google Gemini",
+                "",
                 "Available Tools:",
                 "  • stratus_embeddings() - 768-dim semantic state embeddings",
                 "  • stratus_rollout() - Multi-step action sequence planning",
                 "",
-                "Learn more: /stratus-info (bundled skill)",
+                "Commands: /stratus setup | /stratus verify | /stratus models",
                 "Technical docs: https://stratus.run/docs/technical-overview",
               ],
             };
           },
         },
       ],
+    });
+
+    api.on("gateway_start", async () => {
+      const apiKey = pluginConfig.apiKey || process.env.STRATUS_API_KEY;
+      try {
+        const models = await generateAllModels(apiKey, pluginConfig.baseUrl);
+        await updateStoredModels(models);
+      } catch {
+        // Silent fail — don't disrupt gateway startup
+      }
     });
 
     if (!pluginConfig.tools?.embeddings?.enabled && !pluginConfig.tools?.rollout?.enabled) {
@@ -328,6 +387,32 @@ const stratusPlugin = {
               process.exit(1);
             }
             return { text: "" }; // Return empty to avoid double output
+          } else if (subcommand === "models") {
+            const apiKey = pluginConfig.apiKey || process.env.STRATUS_API_KEY;
+            const models = await generateAllModels(apiKey, pluginConfig.baseUrl);
+
+            await updateStoredModels(models);
+
+            const sizes = ["small", "base", "large", "xl", "huge"];
+            const grouped = sizes
+              .map((size) => {
+                const sizeModels = models.filter(
+                  (m) => m.id.includes(`-x1ac-${size}-`) || m.id.endsWith(`-x1ac-${size}`)
+                );
+                if (sizeModels.length === 0) return null;
+                return `  ${size.toUpperCase()} (${sizeModels.length})\n` +
+                  sizeModels.map((m) => `    • ${m.id}`).join("\n");
+              })
+              .filter(Boolean)
+              .join("\n\n");
+
+            return {
+              text:
+                `Stratus Models (${models.length} total)\n` +
+                `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n` +
+                grouped +
+                `\n\nConfig synced. Run /models to see the full list.`,
+            };
           } else if (subcommand === "verify") {
             // Run verify
             console.log("🔍 Verifying Stratus configuration...\n");
@@ -372,7 +457,8 @@ const stratusPlugin = {
                 "🌊 Stratus X1-AC Plugin\n\n" +
                 "Commands:\n" +
                 "  /stratus setup   - Interactive setup wizard\n" +
-                "  /stratus verify  - Verify configuration\n\n" +
+                "  /stratus verify  - Verify configuration\n" +
+                "  /stratus models  - List all available models (fetches live from API)\n\n" +
                 "Get your API key: https://stratus.run\n" +
                 "Docs: https://stratus.run/docs\n" +
                 "Issues: https://github.com/formthefog/openclaw-stratus-x1-plugin/issues",

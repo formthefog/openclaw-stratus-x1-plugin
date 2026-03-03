@@ -94,21 +94,11 @@ export async function setupStratus(prompter?: any): Promise<SetupResult> {
         details.push("  ✓ Stratus provider already configured");
       }
 
-      // Add model alias
-      if (!config.agents?.defaults?.models) {
-        if (!config.agents) config.agents = {};
-        if (!config.agents.defaults) config.agents.defaults = {};
-        if (!config.agents.defaults.models) config.agents.defaults.models = {};
-      }
-
-      if (!config.agents.defaults.models["stratus/stratus-x1ac-base-claude-sonnet-4-5"]) {
-        config.agents.defaults.models["stratus/stratus-x1ac-base-claude-sonnet-4-5"] = {
-          alias: "stratus",
-          params: {},
-        };
-        details.push("  ✓ Added model alias 'stratus'");
-      } else {
-        details.push("  ✓ Model alias already configured");
+      // Remove any stratus model alias from agents.defaults.models — having ANY entry
+      // there activates openclaw's model allowlist, blocking all non-listed models
+      if (config.agents?.defaults?.models?.["stratus/stratus-x1ac-base-claude-sonnet-4-5"]) {
+        delete config.agents.defaults.models["stratus/stratus-x1ac-base-claude-sonnet-4-5"];
+        details.push("  ✓ Removed restrictive model alias (allows all Stratus models)");
       }
 
       // Write updated config
