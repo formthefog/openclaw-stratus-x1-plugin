@@ -1,0 +1,100 @@
+name: "Sentinel"
+description: "Dual-model AI review bot for pull requests and issues using Anthropic + OpenAI"
+author: "hathbanger"
+
+branding:
+  icon: "shield"
+  color: "blue"
+
+inputs:
+  anthropic_api_key:
+    description: "Anthropic API key for Claude (optional if openrouter_api_key is set)"
+    required: false
+  openai_api_key:
+    description: "OpenAI API key for GPT (optional if openrouter_api_key is set)"
+    required: false
+  github_token:
+    description: "GitHub token for API access"
+    required: false
+    default: ${{ github.token }}
+  config_path:
+    description: "Path to sentinel.yml config file"
+    required: false
+    default: ".github/sentinel.yml"
+  mode:
+    description: "Override mode: review, review_and_suggest, review_and_patch, issue_triage, manual_only"
+    required: false
+  anthropic_model:
+    description: "Anthropic model to use"
+    required: false
+    default: "claude-sonnet-4-20250514"
+  openai_model:
+    description: "OpenAI model to use"
+    required: false
+    default: "gpt-4o"
+  trigger_label:
+    description: "Label required to trigger reviews/fixes. Leave unset to defer to sentinel.yml (default in config: agent, set to '' to run on every PR)"
+    required: false
+  bot_name:
+    description: "Bot name for @mention detection (default: sentinel)"
+    required: false
+    default: "sentinel"
+  fix_mode:
+    description: "Issue fix mode: propose_only, propose_and_pr, yolo"
+    required: false
+    default: "propose_and_pr"
+  openrouter_api_key:
+    description: "OpenRouter API key — used as fallback when Anthropic or OpenAI keys are missing"
+    required: false
+  openrouter_anthropic_model:
+    description: "OpenRouter model for the Anthropic (architect) role"
+    required: false
+    default: "anthropic/claude-sonnet-4-20250514"
+  openrouter_openai_model:
+    description: "OpenRouter model for the OpenAI (engineer) role"
+    required: false
+    default: "openai/gpt-4o"
+  debug:
+    description: "Enable debug logging"
+    required: false
+    default: "false"
+  subway_bridge_url:
+    description: "Subway bridge base URL for agent notifications"
+    required: false
+    default: "https://relay.subway.dev"
+  subway_notify:
+    description: "Notify the agent registered in .subway/pr-contact when review completes"
+    required: false
+    default: "true"
+
+outputs:
+  review_json:
+    description: "Full review result as JSON (v2: includes quality_score, model_agreement, dimensions)"
+  findings_count:
+    description: "Number of findings"
+  action:
+    description: "Decision taken (comment_only, request_changes, etc.)"
+  quality_score:
+    description: "Overall code quality score 0.0-1.0 (1.0 = no findings)"
+  model_agreement:
+    description: "Cross-model agreement ratio 0.0-1.0 (1.0 = full agreement)"
+  findings_critical:
+    description: "Critical finding count"
+  findings_high:
+    description: "High finding count"
+  findings_medium:
+    description: "Medium finding count"
+  findings_low:
+    description: "Low finding count"
+  dim_correctness:
+    description: "Correctness dimension 0.0-1.0 (penalized by bug/security findings)"
+  dim_coverage:
+    description: "Coverage dimension 0.0-1.0 (penalized by test_gap findings)"
+  dim_architecture:
+    description: "Architecture dimension 0.0-1.0 (penalized by architecture findings)"
+  dim_value:
+    description: "Value dimension 0.0-1.0 (penalized by performance/maintainability findings)"
+
+runs:
+  using: "node20"
+  main: "dist/index.js"

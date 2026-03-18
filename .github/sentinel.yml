@@ -1,0 +1,34 @@
+mode: review
+
+models:
+  anthropic:
+    enabled: true
+    model: claude-sonnet-4-20250514
+  openai:
+    enabled: true
+    model: gpt-4o
+
+trigger:
+  require_label: ""
+  respond_to_mentions: true
+  respond_to_replies: true
+  bot_name: sentinel
+
+review:
+  max_files: 50
+  max_patch_chars: 200000
+  comment_style: comprehensive
+  inline_comments: true
+  severity_threshold: low
+
+fix:
+  mode: propose_and_pr
+  confidence_threshold: 0.7
+  max_retry_count: 2
+  create_draft_pr: true
+
+security:
+  restricted_paths:
+    - ".github/workflows/**"
+    - ".github/sentinel.yml"
+  block_fork_mutation: true
