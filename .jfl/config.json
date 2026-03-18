@@ -7,8 +7,8 @@
   "working_branch": "main",
   "sync_to_parent": {
     "journal": true,
-    "knowledge": false,
-    "content": false
+    "knowledge": true,
+    "content": true
   },
   "environments": {
     "development": {
