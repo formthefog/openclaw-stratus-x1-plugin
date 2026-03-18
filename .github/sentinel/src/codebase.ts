@@ -80,10 +80,10 @@ function searchForKeywords(keywords: string[], _files: string[]): SearchHit[] {
   const extGlob = CODE_EXTENSIONS.map((e) => `--include='*.${e}'`).join(" ")
 
   for (const keyword of keywords) {
-    const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+    const shellSafe = keyword.replace(/'/g, "'\\''")
     try {
       const output = execSync(
-        `grep -rn ${extGlob} -i "${escaped}" . 2>/dev/null | head -30`,
+        `grep -rn ${extGlob} -F -i '${shellSafe}' . 2>/dev/null | head -30`,
         { encoding: "utf-8", timeout: 5000 }
       )
       for (const line of output.split("\n").filter(Boolean)) {
