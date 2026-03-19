@@ -14,18 +14,29 @@ interface SetupResult {
   details?: string[];
 }
 
-export async function setupStratus(prompter?: any): Promise<SetupResult> {
+interface SetupOptions {
+  apiKey?: string;
+  silent?: boolean;
+}
+
+export async function setupStratus(prompterOrOptions?: any, options?: SetupOptions): Promise<SetupResult> {
+  const opts: SetupOptions = options ?? (
+    prompterOrOptions && typeof prompterOrOptions === "object" && ("apiKey" in prompterOrOptions || "silent" in prompterOrOptions)
+      ? prompterOrOptions as SetupOptions
+      : {}
+  );
+
   const details: string[] = [];
 
   try {
-    const apiKey = process.env.STRATUS_API_KEY;
+    const apiKey = opts.apiKey || process.env.STRATUS_API_KEY;
     const usingFormationPool = !apiKey;
 
     if (apiKey) {
       if (!apiKey.startsWith("stratus_sk_")) {
         return {
           success: false,
-          message: "Invalid STRATUS_API_KEY format",
+          message: "Invalid API key format",
           details: [
             "API key must start with 'stratus_sk_'",
             "",
@@ -33,7 +44,7 @@ export async function setupStratus(prompter?: any): Promise<SetupResult> {
           ],
         };
       }
-      details.push("✓ Using STRATUS_API_KEY from environment (BYOK — no markup)");
+      details.push(`✓ Using Stratus API key (BYOK — no markup)${opts.apiKey ? " [provided via arg]" : " [from environment]"}`);
     } else {
       details.push("✓ No API key found — using Formation pooled keys (zero-config)");
       details.push("  ℹ  Formation pool applies a 25% markup on usage");
@@ -66,6 +77,7 @@ export async function setupStratus(prompter?: any): Promise<SetupResult> {
       if (!config.models.providers.stratus) {
         config.models.providers.stratus = {
           baseUrl: "https://api.stratus.run/v1",
+          ...(apiKey ? { apiKey } : {}),
           api: "openai-completions",
           models: [
             {
@@ -81,7 +93,24 @@ export async function setupStratus(prompter?: any): Promise<SetupResult> {
         };
         details.push("  ✓ Added Stratus provider configuration");
       } else {
+        if (apiKey && config.models.providers.stratus.apiKey !== apiKey) {
+          config.models.providers.stratus.apiKey = apiKey;
+          details.push("  ✓ Updated API key in provider config");
+        }
         details.push("  ✓ Stratus provider already configured");
+      }
+
+      if (!config.plugins) config.plugins = {};
+      if (!config.plugins.entries) config.plugins.entries = {};
+      if (!config.plugins.entries.stratus) {
+        config.plugins.entries.stratus = { enabled: true, config: {} };
+      }
+      if (apiKey) {
+        config.plugins.entries.stratus.config = {
+          ...config.plugins.entries.stratus.config,
+          apiKey,
+        };
+        details.push("  ✓ Persisted API key in plugin config");
       }
 
       if (config.agents?.defaults?.models?.["stratus/stratus-x1ac-base-claude-sonnet-4-5"]) {

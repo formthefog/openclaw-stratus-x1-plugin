@@ -4,7 +4,7 @@ import type { StratusPluginConfig } from "./src/types.js";
 import { createStratusClient } from "./src/client.js";
 import { StratusConfigSchema } from "./src/config.js";
 import { setupStratus } from "./src/setup.js";
-import { readFileSync, writeFileSync, existsSync } from "fs";
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
 import { join } from "path";
 import { homedir } from "os";
 
@@ -232,6 +232,32 @@ const stratusPlugin = {
       } catch {
         // Silent fail — don't disrupt gateway startup
       }
+
+      if (apiKey) {
+        try {
+          const authPath = join(homedir(), ".openclaw", "agents", "main", "agent", "auth-profiles.json");
+          let authConfig: any = { version: 1, profiles: {}, lastGood: {}, usageStats: {} };
+          if (existsSync(authPath)) {
+            authConfig = JSON.parse(readFileSync(authPath, "utf-8"));
+          }
+          const existingProfile = authConfig.profiles["stratus:default"];
+          if (!existingProfile || existingProfile.key !== apiKey) {
+            authConfig.profiles["stratus:default"] = {
+              type: "api_key",
+              provider: "stratus",
+              key: apiKey,
+            };
+            authConfig.lastGood.stratus = "stratus:default";
+            const authDir = join(homedir(), ".openclaw", "agents", "main", "agent");
+            if (!existsSync(authDir)) {
+              mkdirSync(authDir, { recursive: true });
+            }
+            writeFileSync(authPath, JSON.stringify(authConfig, null, 2));
+          }
+        } catch {
+          // Silent fail — don't disrupt gateway startup
+        }
+      }
     });
 
     if (!pluginConfig.tools?.embeddings?.enabled && !pluginConfig.tools?.rollout?.enabled) {
@@ -385,8 +411,10 @@ const stratusPlugin = {
           const subcommand = (tokens[0] || "help").toLowerCase();
 
           if (subcommand === "setup") {
-            // Run setup
-            const result = await setupStratus(ctx.prompter);
+            const keyArg = tokens[1];
+            const result = keyArg
+              ? await setupStratus({ apiKey: keyArg, silent: true })
+              : await setupStratus(ctx.prompter);
 
             if (result.success) {
               console.log(`\n✅ ${result.message}\n`);
@@ -400,7 +428,7 @@ const stratusPlugin = {
               }
               process.exit(1);
             }
-            return { text: "" }; // Return empty to avoid double output
+            return { text: "" };
           } else if (subcommand === "models") {
             const apiKey = pluginConfig.apiKey || process.env.STRATUS_API_KEY;
             const models = await generateAllModels(apiKey, pluginConfig.baseUrl);
@@ -475,14 +503,17 @@ const stratusPlugin = {
             console.log("   openclaw agent 'Hello Stratus!' --model stratus\n");
             return { text: "" };
           } else {
-            // Show help
             return {
               text:
                 "🌊 Stratus X1-AC Plugin\n\n" +
                 "Commands:\n" +
-                "  /stratus setup   - Interactive setup wizard\n" +
-                "  /stratus verify  - Verify configuration\n" +
-                "  /stratus models  - List all available models (fetches live from API)\n\n" +
+                "  /stratus setup                    - Interactive setup wizard (Formation pool)\n" +
+                "  /stratus setup <stratus_sk_...>   - Non-interactive setup with API key\n" +
+                "  /stratus verify                   - Verify configuration & connectivity\n" +
+                "  /stratus models                   - List all available models (live from API)\n\n" +
+                "Agent/programmatic setup:\n" +
+                "  /stratus setup stratus_sk_your_key_here\n" +
+                "  # Or: set STRATUS_API_KEY env var → gateway auto-configures on start\n\n" +
                 "Get your API key: https://stratus.run\n" +
                 "Docs: https://stratus.run/docs\n" +
                 "Issues: https://github.com/formthefog/openclaw-stratus-x1-plugin/issues",
