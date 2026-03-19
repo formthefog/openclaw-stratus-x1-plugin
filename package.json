@@ -1,6 +1,6 @@
 {
   "name": "@formthefog/stratus",
-  "version": "2026.3.18",
+  "version": "2026.3.19",
   "description": "Stratus API integration for OpenClaw - action-conditioned JEPA for autonomous agent planning",
   "keywords": [
     "agent",
