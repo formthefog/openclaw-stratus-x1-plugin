@@ -9,21 +9,24 @@
 ## Credentials
 
 **What is accessed:**
-- `STRATUS_API_KEY` — read from environment or OpenClaw config (`plugins.stratus.apiKey`)
+- `STRATUS_API_KEY` — read from environment or OpenClaw config (`plugins.stratus.apiKey`). **Optional** — if not set, Formation pooled keys are used automatically.
+- `OPENAI_API_KEY` — optional, forwarded as inline BYOK key in request body
+- `ANTHROPIC_API_KEY` — optional, forwarded as inline BYOK key in request body
+- `GOOGLE_API_KEY` — optional, forwarded as inline BYOK key in request body and as `X-Google-Key` header
 
 **What is validated:**
-- Key must be present before any network call is made
-- Key must match the format `stratus_sk_*` — requests with malformed keys are rejected locally, no network call is made
+- If `STRATUS_API_KEY` is present, it must match the format `stratus_sk_*` — requests with malformed keys are rejected locally, no network call is made
+- If no key is present, the plugin operates in Formation pool mode (zero-config, 25% markup)
 
 **What is written to disk:**
-- During setup, the API key is stored in `~/.openclaw/agents/main/agent/auth-profiles.json`
+- During setup, the auth profile is stored in `~/.openclaw/agents/main/agent/auth-profiles.json`
 - This is the standard OpenClaw credential store, equivalent in scope to `~/.aws/credentials` or `~/.npmrc`
 - A timestamped backup of any existing file is created before writing
-- The key is never logged, printed, or written anywhere else by this plugin
+- Keys are never logged, printed, or written anywhere else by this plugin
 
 **What is never accessed:**
 - `~/.ssh` or any SSH keys or known_hosts — nothing in this plugin reads or touches SSH paths
-- Other environment variables beyond `STRATUS_API_KEY`, `STRATUS_BASE_URL`, and `SHELL`
+- Other environment variables beyond `STRATUS_API_KEY`, `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GOOGLE_API_KEY`, `STRATUS_BASE_URL`, and `SHELL`
 - Browser storage, keychains, or system credential managers
 
 ---
@@ -33,8 +36,17 @@
 **Outbound endpoints:**
 | Endpoint | When | What is sent |
 |---|---|---|
-| `https://api.stratus.run/v1/embeddings` | `stratus_embeddings` tool call | `Authorization: Bearer <key>`, text input |
-| `https://api.stratus.run/v1/rollout` | `stratus_rollout` tool call | `Authorization: Bearer <key>`, goal + state |
+| `https://api.stratus.run/v1/embeddings` | `stratus_embeddings` tool call | `Authorization: Bearer <key>` (if set), text input, optional inline keys |
+| `https://api.stratus.run/v1/rollout` | `stratus_rollout` tool call | `Authorization: Bearer <key>` (if set), goal + state, optional inline keys |
+| `https://api.stratus.run/v1/models` | Plugin startup / `/stratus models` | `Authorization: Bearer <key>` (if set) |
+
+**Headers sent:**
+- `Authorization: Bearer <key>` — only when `STRATUS_API_KEY` is configured
+- `X-Google-Key: <key>` — only when a Google/Gemini key is configured
+- `Content-Type: application/json` — on all POST requests
+
+**Inline key fields in request body:**
+- `openai_key`, `anthropic_key`, `gemini_key` — only when corresponding environment variables or config values are set
 
 **What is never done:**
 - No calls to any endpoint other than `api.stratus.run`
@@ -55,10 +67,9 @@ Data handling is governed by the [Stratus privacy policy](https://stratus.run/pr
 
 **Files written during setup:**
 - Same paths as above, plus timestamped `.backup-*` copies before any modification
-- Optionally appends `export STRATUS_API_KEY=...` to `~/.zshrc` / `~/.bashrc` / `~/.bash_profile` — only when the user explicitly answers `y` at the prompt
 
 **What is never touched:**
-- No files outside `~/.openclaw/`, the shell config the user selects, or the LaunchAgent plist
+- No files outside `~/.openclaw/` or the LaunchAgent plist
 - No `/etc/`, `/usr/`, `/Library/` (system paths)
 - No other dotfiles or home directory contents
 

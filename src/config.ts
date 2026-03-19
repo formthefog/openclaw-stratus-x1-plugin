@@ -43,10 +43,22 @@ export const StratusConfigSchema: OpenClawPluginConfigSchema = {
         ? (tools.rollout as Record<string, unknown>)
         : {};
 
+    const inlineKeysRaw =
+      raw.inlineKeys && typeof raw.inlineKeys === "object" && !Array.isArray(raw.inlineKeys)
+        ? (raw.inlineKeys as Record<string, unknown>)
+        : {};
+
+    const inlineKeys = {
+      openai_key: typeof inlineKeysRaw.openai_key === "string" ? inlineKeysRaw.openai_key : undefined,
+      anthropic_key: typeof inlineKeysRaw.anthropic_key === "string" ? inlineKeysRaw.anthropic_key : undefined,
+      gemini_key: typeof inlineKeysRaw.gemini_key === "string" ? inlineKeysRaw.gemini_key : undefined,
+    };
+
     return {
       enabled,
       apiKey,
       baseUrl,
+      inlineKeys,
       provider: {
         enabled: providerEnabled,
         defaultModel,
@@ -65,6 +77,9 @@ export const StratusConfigSchema: OpenClawPluginConfigSchema = {
     enabled: { label: "Enabled" },
     "config.apiKey": { label: "API Key", sensitive: true },
     "config.baseUrl": { label: "Base URL", placeholder: "https://api.stratus.run" },
+    "config.inlineKeys.openai_key": { label: "OpenAI Key (BYOK)", sensitive: true },
+    "config.inlineKeys.anthropic_key": { label: "Anthropic Key (BYOK)", sensitive: true },
+    "config.inlineKeys.gemini_key": { label: "Google Gemini Key (BYOK)", sensitive: true },
     "config.provider.enabled": { label: "Provider Enabled" },
     "config.provider.defaultModel": {
       label: "Default Model",

@@ -38,13 +38,24 @@ export interface StratusRolloutResponse {
   metadata?: {
     model: string;
     duration_ms?: number;
+    brain_confidence?: number;
+    brain_goal_proximity?: number;
+    key_source?: "user" | "formation";
+    formation_markup_applied?: number;
   };
+}
+
+export interface StratusInlineKeys {
+  openai_key?: string;
+  anthropic_key?: string;
+  gemini_key?: string;
 }
 
 export interface StratusPluginConfig {
   enabled?: boolean;
   apiKey?: string;
   baseUrl?: string;
+  inlineKeys?: StratusInlineKeys;
   provider?: {
     enabled?: boolean;
     defaultModel?: string;

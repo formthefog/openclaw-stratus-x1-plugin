@@ -18,31 +18,28 @@ export async function setupStratus(prompter?: any): Promise<SetupResult> {
   const details: string[] = [];
 
   try {
-    // Step 1: Check for existing API key
     const apiKey = process.env.STRATUS_API_KEY;
+    const usingFormationPool = !apiKey;
 
-    if (!apiKey) {
-      return {
-        success: false,
-        message: "STRATUS_API_KEY not found",
-        details: [
-          "Please set your Stratus API key as an environment variable:",
-          "",
-          "  export STRATUS_API_KEY=stratus_sk_your_key_here",
-          "",
-          "Or add to your shell config (~/.zshrc or ~/.bashrc):",
-          "",
-          "  echo 'export STRATUS_API_KEY=stratus_sk_your_key_here' >> ~/.zshrc",
-          "  source ~/.zshrc",
-          "",
-          "Get your API key at: https://stratus.run",
-        ],
-      };
+    if (apiKey) {
+      if (!apiKey.startsWith("stratus_sk_")) {
+        return {
+          success: false,
+          message: "Invalid STRATUS_API_KEY format",
+          details: [
+            "API key must start with 'stratus_sk_'",
+            "",
+            "Get your API key at: https://stratus.run",
+          ],
+        };
+      }
+      details.push("✓ Using STRATUS_API_KEY from environment (BYOK — no markup)");
+    } else {
+      details.push("✓ No API key found — using Formation pooled keys (zero-config)");
+      details.push("  ℹ  Formation pool applies a 25% markup on usage");
+      details.push("  💡 Set STRATUS_API_KEY for BYOK (no markup)");
     }
 
-    details.push("✓ Using STRATUS_API_KEY from environment");
-
-    // Paths
     const homeDir = os.homedir();
     const openclawConfig = path.join(homeDir, ".openclaw", "openclaw.json");
     const authProfiles = path.join(
@@ -54,25 +51,18 @@ export async function setupStratus(prompter?: any): Promise<SetupResult> {
       "auth-profiles.json"
     );
 
-    // Step 2: Update OpenClaw config
     details.push("🔧 Updating OpenClaw configuration...");
 
     if (fs.existsSync(openclawConfig)) {
-      // Backup
       const backupPath = `${openclawConfig}.backup-${Date.now()}`;
       fs.copyFileSync(openclawConfig, backupPath);
       details.push(`  📦 Created backup: ${path.basename(backupPath)}`);
 
-      // Read and update config
       const config = JSON.parse(fs.readFileSync(openclawConfig, "utf-8"));
 
-      // Add models.providers.stratus if not present
-      if (!config.models) {
-        config.models = {};
-      }
-      if (!config.models.providers) {
-        config.models.providers = {};
-      }
+      if (!config.models) config.models = {};
+      if (!config.models.providers) config.models.providers = {};
+
       if (!config.models.providers.stratus) {
         config.models.providers.stratus = {
           baseUrl: "https://api.stratus.run/v1",
@@ -94,14 +84,11 @@ export async function setupStratus(prompter?: any): Promise<SetupResult> {
         details.push("  ✓ Stratus provider already configured");
       }
 
-      // Remove any stratus model alias from agents.defaults.models — having ANY entry
-      // there activates openclaw's model allowlist, blocking all non-listed models
       if (config.agents?.defaults?.models?.["stratus/stratus-x1ac-base-claude-sonnet-4-5"]) {
         delete config.agents.defaults.models["stratus/stratus-x1ac-base-claude-sonnet-4-5"];
         details.push("  ✓ Removed restrictive model alias (allows all Stratus models)");
       }
 
-      // Write updated config
       fs.writeFileSync(openclawConfig, JSON.stringify(config, null, 2));
     } else {
       return {
@@ -115,7 +102,6 @@ export async function setupStratus(prompter?: any): Promise<SetupResult> {
       };
     }
 
-    // Step 3: Update auth profiles
     details.push("🔑 Configuring authentication...");
 
     const authDir = path.dirname(authProfiles);
@@ -125,14 +111,10 @@ export async function setupStratus(prompter?: any): Promise<SetupResult> {
 
     let authConfig: any;
     if (fs.existsSync(authProfiles)) {
-      // Backup
       const backupPath = `${authProfiles}.backup-${Date.now()}`;
       fs.copyFileSync(authProfiles, backupPath);
-
-      // Update existing
       authConfig = JSON.parse(fs.readFileSync(authProfiles, "utf-8"));
     } else {
-      // Create new
       authConfig = {
         version: 1,
         profiles: {},
@@ -141,22 +123,34 @@ export async function setupStratus(prompter?: any): Promise<SetupResult> {
       };
     }
 
-    // Add Stratus profile
-    authConfig.profiles["stratus:default"] = {
-      type: "api_key",
-      provider: "stratus",
-      key: apiKey,
-    };
-    authConfig.lastGood.stratus = "stratus:default";
+    if (apiKey) {
+      authConfig.profiles["stratus:default"] = {
+        type: "api_key",
+        provider: "stratus",
+        key: apiKey,
+      };
+      authConfig.lastGood.stratus = "stratus:default";
+      details.push("  ✓ Updated auth profile (BYOK)");
+    } else {
+      authConfig.profiles["stratus:formation-pool"] = {
+        type: "formation_pool",
+        provider: "stratus",
+      };
+      authConfig.lastGood.stratus = "stratus:formation-pool";
+      details.push("  ✓ Configured Formation pool auth (zero-config)");
+    }
 
     fs.writeFileSync(authProfiles, JSON.stringify(authConfig, null, 2));
-    details.push("  ✓ Updated auth profile");
+
+    const modeLabel = usingFormationPool ? "Formation pool (zero-config)" : "BYOK (no markup)";
 
     return {
       success: true,
       message: "Setup complete! 🎉",
       details: [
         ...details,
+        "",
+        `🔒 Auth mode: ${modeLabel}`,
         "",
         "🎯 Next steps:",
         "  1. Restart gateway: openclaw gateway stop && openclaw gateway install",
@@ -166,6 +160,14 @@ export async function setupStratus(prompter?: any): Promise<SetupResult> {
         "📚 Available tools:",
         "  • stratus_embeddings - Generate semantic embeddings",
         "  • stratus_rollout - Multi-step task planning",
+        ...(usingFormationPool
+          ? [
+              "",
+              "💡 To remove the 25% Formation markup, set your own key:",
+              "   export STRATUS_API_KEY=stratus_sk_your_key_here",
+              "   Then re-run /stratus setup",
+            ]
+          : []),
       ],
     };
   } catch (error) {

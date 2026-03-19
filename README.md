@@ -10,10 +10,12 @@ Integrate Stratus V3 (X1-AC), a state-of-the-art action-conditioned JEPA (Joint-
 
 ## Features
 
-- **Model Provider**: Use Stratus models (GPT-4o, Claude 4.x, or Gemini backends) for agent conversations
+- **Zero-Config**: Works out of the box with Formation pooled keys — no API key needed
+- **2050+ Models**: Dynamic discovery via OpenRouter — OpenAI, Anthropic, Google, and more
+- **Model Provider**: Use Stratus models for agent conversations with predictive planning
 - **Embeddings Tool**: Generate 768-dimensional semantic state embeddings
-- **Rollout Tool**: Multi-step task planning with action sequence prediction
-- **Secure**: API key authentication with automatic validation
+- **Rollout Tool**: Multi-step task planning via Policy Head v3 (94.4% accuracy)
+- **BYOK Support**: Bring your own provider keys (`openai_key`, `anthropic_key`, `gemini_key`) for zero-markup usage
 - **Opt-in Tools**: Tools are optional and require explicit allowlisting
 
 > See [SECURITY.md](./SECURITY.md) for a full accounting of credentials accessed, network calls made, and files written.
@@ -26,22 +28,9 @@ Integrate Stratus V3 (X1-AC), a state-of-the-art action-conditioned JEPA (Joint-
 
 ## Installation
 
-### Quick Start (3 Steps) ✨
+### Quick Start (2 Steps) ✨
 
 > **Note:** This plugin does NOT have an automatic postinstall script. You must run setup manually.
-
-**Before you begin**, export your Stratus API key. Get one at [stratus.run](https://stratus.run).
-
-```bash
-export STRATUS_API_KEY=stratus_sk_your_key_here
-```
-
-To persist it across sessions, add it to your shell config:
-
-```bash
-echo 'export STRATUS_API_KEY=stratus_sk_your_key_here' >> ~/.zshrc
-source ~/.zshrc
-```
 
 ```bash
 # 1. Install the plugin
@@ -54,14 +43,22 @@ openclaw plugins install @formthefog/stratus
 /stratus verify
 ```
 
-**That's it!** The `/stratus setup` command handles:
-- ✅ API key configuration
+**That's it!** No API key required — Formation pooled keys give you instant access to all 2050+ models.
+
+The `/stratus setup` command handles:
+- ✅ Zero-config auth via Formation pool (or BYOK if you have a key)
 - ✅ OpenClaw config updates
 - ✅ Auth profile creation
-- ✅ Model registration
+- ✅ Dynamic model registration
 - ✅ Gateway restart prompt
 
 **No manual config editing required!** 🧈
+
+> **Optional — BYOK (no markup):** Set `STRATUS_API_KEY` to bypass the Formation pool:
+> ```bash
+> export STRATUS_API_KEY=stratus_sk_your_key_here
+> ```
+> Then re-run `/stratus setup`.
 
 > **Tip:** Once installed, you can also access Stratus models with `/model stratus` in chat.
 
@@ -84,11 +81,11 @@ Use these slash commands in any OpenClaw chat (TUI, Telegram, Discord, etc.):
 
 The interactive setup command will:
 
-1. ✅ Prompt for your Stratus API key
+1. ✅ Detect auth mode (BYOK if `STRATUS_API_KEY` is set, Formation pool otherwise)
 2. ✅ Update OpenClaw configuration
 3. ✅ Configure authentication profiles
-4. ✅ Add model aliases
-5. ✅ (Optional) Add environment variables to your shell config
+4. ✅ Dynamically register all available models from the API
+5. ✅ Report auth mode and markup status
 
 ---
 
@@ -173,6 +170,11 @@ Edit `~/.openclaw/openclaw.json`:
         "config": {
           "apiKey": "${STRATUS_API_KEY}",
           "baseUrl": "https://api.stratus.run",
+          "inlineKeys": {
+            "openai_key": "${OPENAI_API_KEY}",
+            "anthropic_key": "${ANTHROPIC_API_KEY}",
+            "gemini_key": "${GOOGLE_API_KEY}"
+          },
           "provider": {
             "enabled": true,
             "defaultModel": "stratus-x1ac-base-claude-sonnet-4-5"
@@ -187,6 +189,8 @@ Edit `~/.openclaw/openclaw.json`:
   }
 }
 ```
+
+> **Note:** All keys are optional. Without any keys, Formation pooled keys are used automatically (25% markup). Inline provider keys (`openai_key`, `anthropic_key`, `gemini_key`) let you BYOK for specific providers while using the pool for others.
 
 > **Important:** OpenClaw's plugin config schema requires plugin-specific settings
 > to be nested under a `config` key within `plugins.entries.<id>`. Only `enabled`
@@ -215,9 +219,9 @@ openclaw agent --model stratus/stratus-x1ac-small-claude-haiku-4-5 \
   "Quick question: what is JEPA?"
 ```
 
-**Available Models: Dynamic (75+ models)**
+**Available Models: Dynamic (2050+ models)**
 
-Models are fetched live from the Stratus API on startup and refreshed automatically. Run `/stratus models` to see the current full list. The plugin supports all models returned by the API.
+Models are fetched live from the Stratus API on startup via OpenRouter dynamic discovery and refreshed automatically. Run `/stratus models` to see the current full list. The plugin supports all models returned by the API.
 
 **Model Format:** `stratus-x1ac-{size}-{llm}`
 
@@ -443,17 +447,9 @@ Tools are **opt-in only**:
 
 ### Quick Fixes
 
-#### "Stratus API key not configured"
-
-**Solution**:
-
-```bash
-export STRATUS_API_KEY=stratus_sk_live_your_key_here
-```
-
 #### "Invalid Stratus API key format"
 
-**Solution**: Verify your API key from stratus.run starts with `stratus_sk_`.
+**Solution**: If you set `STRATUS_API_KEY`, verify it starts with `stratus_sk_`. Or remove it entirely to use Formation pool (zero-config).
 
 #### "Tool not available"
 
@@ -511,8 +507,13 @@ interface PluginEntryConfig {
 
 // Plugin-specific config (nested under "config" key)
 interface StratusPluginConfig {
-  apiKey?: string;   // API key (or use STRATUS_API_KEY env var)
+  apiKey?: string;   // API key (optional — Formation pool used as fallback)
   baseUrl?: string;  // API base URL
+  inlineKeys?: {     // BYOK keys passed per-request
+    openai_key?: string;
+    anthropic_key?: string;
+    gemini_key?: string;  // Also sent as X-Google-Key header
+  };
   provider?: {
     enabled?: boolean;     // Enable provider registration
     defaultModel?: string; // Default model

@@ -1,7 +1,7 @@
 ---
 name: stratus-info
 description: Knowledge base about Stratus X1-AC world model system
-version: 1.0.0
+version: 2.0.0
 author: Stratus Team
 ---
 
@@ -25,10 +25,12 @@ This is a **hybrid architecture** with two capabilities:
 - Predicts compressed representations, not raw outputs
 - Enables planning by simulating action sequences before executing
 
-### 2. Policy Head (Action Selector): "What action achieves this goal?"
+### 2. Policy Head v3 (Action Selector): "What action achieves this goal?"
+- 94.41% masked accuracy — brain-guided action sequencing
 - Predicts the best action given current state + goal state
+- Returns `brain_confidence` and `brain_goal_proximity` scores
 - Fast decision-making for known patterns
-- Provides confidence scores (low confidence → escalate to LLM)
+- Low confidence → escalate to LLM
 
 **Key Innovation:**
 Instead of just guessing the next action, Stratus can **simulate the outcome of multiple actions** and pick the one most likely to achieve the goal.
@@ -44,6 +46,7 @@ Agents learn from each other in real-time:
 - When one agent discovers an effective approach, that knowledge flows to all agents
 - **Continuous learning**: successful patterns get canonicalized and fine-tuned into the model
 - **Domain-specific fine-tunes** (e-commerce, dev tools, research, etc.) share learnings back to the base model
+- **Hierarchical tool architecture**: Brain handles sub-agent routing (orchestrator → sub-agents with specialized tool sets)
 
 It's like a hive mind for AI agents — practical distributed learning at scale.
 
@@ -78,10 +81,35 @@ see → simulate outcomes → pick best action → act
 
 ---
 
+## Authentication & Keys
+
+### Zero-Config (Formation Pool)
+No API key needed. Formation holds pooled OpenRouter keys as a universal fallback.
+- 25% markup on usage
+- Instant access to all 2050+ models on day 0
+- No setup required
+
+### BYOK (Bring Your Own Key)
+Set `STRATUS_API_KEY` to bypass the Formation pool (no markup).
+- Keys must start with `stratus_sk_`
+- Get yours at https://stratus.run
+
+### Inline Provider Keys
+Pass provider keys per-request for direct BYOK passthrough:
+- `openai_key` — OpenAI direct
+- `anthropic_key` — Anthropic direct
+- `gemini_key` — Google Gemini direct (also sent as `X-Google-Key` header)
+- Three-tier priority: headers > body > vault
+
+Responses include `key_source: "user"` or `key_source: "formation"` so you always know which path was used.
+
+---
+
 ## Available Models
 
-Stratus provides **75 models** in the format:
+Stratus provides **2050+ models** dynamically discovered via OpenRouter at startup.
 
+Model format:
 ```
 stratus-x1ac-{size}-{llm}
 ```
@@ -89,15 +117,18 @@ stratus-x1ac-{size}-{llm}
 **Sizes:** `small`, `base`, `large`, `xl`, `huge`
 
 **Recommended LLMs:**
-- `claude-sonnet-4-5` - Claude 4.5 Sonnet (recommended)
-- `gpt-4o` - GPT-4 Optimized
-- `claude-haiku-4-5` - Fast, cost-effective
+- `claude-sonnet-4-5` — Claude 4.5 Sonnet (recommended)
+- `gpt-4o` — GPT-4 Optimized
+- `claude-haiku-4-5` — Fast, cost-effective
+- `gemini-2.0-flash` — High context, fast
 
 **Example:**
 ```bash
 openclaw agent "Plan a multi-step research task" \
   --model stratus/stratus-x1ac-base-claude-sonnet-4-5
 ```
+
+Use `/stratus models` to fetch the full live list from the API.
 
 ---
 
@@ -121,13 +152,19 @@ Generate 768-dimensional semantic state embeddings.
 ```
 
 ### `stratus_rollout`
-Multi-step action sequence planning.
+Multi-step action sequence planning via Policy Head v3.
 
 **Use cases:**
 - Task decomposition
 - Action planning
 - Goal-oriented reasoning
 - Multi-step workflows
+
+**Response fields:**
+- `steps` — ordered action sequence
+- `metadata.brain_confidence` — how confident the brain is in the plan
+- `metadata.brain_goal_proximity` — estimated closeness to goal state
+- `metadata.key_source` — "user" or "formation"
 
 **Example:**
 ```typescript
@@ -162,6 +199,27 @@ const response = await openai.chat.completions.create({
 
 Stratus handles planning, then routes execution to the specified LLM (GPT-4o, Claude, etc.).
 
+Non-Stratus models (e.g. raw `gpt-4o`) bypass the world model pipeline entirely (LLM passthrough).
+
+Tool limit: **1024 tools per request** (raised from 100).
+
+---
+
+## SDKs
+
+- **TypeScript**: This OpenClaw plugin (`@formthefog/stratus`)
+- **Python**: `pip install stratus-sdk-py` (v0.0.6, full TS SDK parity, 76 tests)
+- **Pi Agent**: `pi-formation` package (7 curated X1-AC models for Pi coding agent)
+
+---
+
+## Billing
+
+- **Signup credits**: 200 credits (20K units) for new users
+- **Saved cards**: Stripe-backed auto top-up when balance is low
+- **Subscriptions**: Monthly credit bundles (starter/pro/enterprise) — 25% more credits vs one-time
+- **Formation pool**: 25% markup on pooled key usage; BYOK users pay no markup
+
 ---
 
 ## Common Misconceptions
@@ -171,6 +229,7 @@ Stratus handles planning, then routes execution to the specified LLM (GPT-4o, Cl
 | "Stratus is just Claude with extended reasoning" | Stratus is a world model that predicts action consequences + collective learning network |
 | "It's a language model" | It's a hybrid architecture (world model + policy head) that routes to LLMs for execution |
 | "It's an LLM wrapper" | It's a JEPA-based predictive system with its own training and inference pipeline |
+| "You need an API key" | Formation pool provides zero-config access; BYOK is optional |
 
 ---
 
@@ -187,10 +246,10 @@ For full technical details, see:
 
 1. **Install plugin:**
    ```bash
-   openclaw plugins install @hathbanger/stratus
+   openclaw plugins install @formthefog/stratus
    ```
 
-2. **Set API key:**
+2. **(Optional) Set API key for BYOK:**
    ```bash
    export STRATUS_API_KEY=stratus_sk_your_key_here
    ```
@@ -215,6 +274,7 @@ For full technical details, see:
 - Research workflows
 - Complex decision-making with uncertain outcomes
 - Tasks requiring "what-if" simulation
+- Large tool sets (up to 1024 tools)
 
 **Overkill for:**
 - Simple Q&A

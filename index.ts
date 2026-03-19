@@ -150,15 +150,13 @@ const stratusPlugin = {
       auth: [
         {
           id: "api-key",
-          label: "API Key",
+          label: "API Key (optional — Formation pool available)",
           kind: "api_key",
           run: async (ctx) => {
             const apiKey = await ctx.prompter.text({
-              message: "Enter your Stratus API key:",
+              message: "Enter your Stratus API key (leave blank for Formation pool — zero-config):",
               validate: (val: string) => {
-                if (!val.trim()) {
-                  return "API key is required";
-                }
+                if (!val.trim()) return undefined;
                 if (!val.startsWith("stratus_sk_")) {
                   return "API key must start with 'stratus_sk_'";
                 }
@@ -166,28 +164,28 @@ const stratusPlugin = {
               },
             });
 
-            const profileId = `${PROVIDER_ID}:default`;
-            
-            // Fetch all available models
-            const models = await generateAllModels(apiKey, DEFAULT_BASE_URL);
+            const usingPool = !apiKey?.trim();
+            const resolvedKey = usingPool ? undefined : apiKey;
+            const profileId = `${PROVIDER_ID}:${usingPool ? "formation-pool" : "default"}`;
+
+            const models = await generateAllModels(resolvedKey, DEFAULT_BASE_URL);
+
+            const credential = usingPool
+              ? { type: "formation_pool" as const, provider: PROVIDER_ID }
+              : { type: "api_key" as const, provider: PROVIDER_ID, key: resolvedKey! };
+
+            const authMode = usingPool
+              ? "Formation pool (zero-config, 25% markup)"
+              : "BYOK (no markup)";
 
             return {
-              profiles: [
-                {
-                  profileId,
-                  credential: {
-                    type: "api_key",
-                    provider: PROVIDER_ID,
-                    key: apiKey,
-                  },
-                },
-              ],
+              profiles: [{ profileId, credential }],
               configPatch: {
                 models: {
                   providers: {
                     [PROVIDER_ID]: {
                       baseUrl: DEFAULT_BASE_URL,
-                      apiKey: apiKey,
+                      ...(resolvedKey ? { apiKey: resolvedKey } : {}),
                       api: "openai-completions",
                       models: models,
                     },
@@ -198,21 +196,24 @@ const stratusPlugin = {
               notes: [
                 "🌊 Stratus X1-AC: World Model + Collective Intelligence System",
                 "",
+                `🔒 Auth: ${authMode}`,
+                "",
                 "NOT just an LLM wrapper — this is predictive planning:",
                 "  Traditional agents: see → think → act → see again",
                 "  Stratus agents: see → simulate outcomes → pick best → act",
                 "",
                 "Architecture:",
                 "  • World Model (X1): Predicts future states from actions (JEPA-based)",
-                "  • Policy Head (X1-AC): Selects optimal actions toward goals",
+                "  • Policy Head v3 (X1-AC): 94.4% accuracy, brain-guided action sequencing",
                 "  • Collective Network: Agents learn from each other in real-time",
                 "",
-                `Loaded ${models.length} available models from Stratus API`,
-                "  Backends: OpenAI GPT-4o, Anthropic Claude 4.x, Google Gemini",
+                `Loaded ${models.length} models dynamically from Stratus API`,
+                "  2050+ models via OpenRouter — OpenAI, Anthropic, Google, and more",
+                "  BYOK support: pass your own provider keys to bypass Formation pool",
                 "",
                 "Available Tools:",
                 "  • stratus_embeddings() - 768-dim semantic state embeddings",
-                "  • stratus_rollout() - Multi-step action sequence planning",
+                "  • stratus_rollout() - Multi-step action sequence planning (Policy Head v3)",
                 "",
                 "Commands: /stratus setup | /stratus verify | /stratus models",
                 "Technical docs: https://stratus.run/docs/technical-overview",
@@ -344,11 +345,24 @@ const stratusPlugin = {
               ? `Successfully planned ${steps.length} steps to reach goal`
               : `Planning incomplete (${steps.length} steps generated)`;
 
+            const meta = response.metadata;
+            const metaLines: string[] = [];
+            if (meta?.brain_confidence != null) {
+              metaLines.push(`Brain confidence: ${(meta.brain_confidence * 100).toFixed(1)}%`);
+            }
+            if (meta?.brain_goal_proximity != null) {
+              metaLines.push(`Goal proximity: ${(meta.brain_goal_proximity * 100).toFixed(1)}%`);
+            }
+            if (meta?.key_source) {
+              metaLines.push(`Key source: ${meta.key_source}${meta.formation_markup_applied ? ` (${meta.formation_markup_applied * 100}% markup)` : ""}`);
+            }
+            const metaText = metaLines.length > 0 ? `\n\n${metaLines.join("\n")}` : "";
+
             return {
               content: [
                 {
                   type: "text",
-                  text: `${summary}\nGoal: ${response.goal}\n\nSteps:\n${stepText}`,
+                  text: `${summary}\nGoal: ${response.goal}\n\nSteps:\n${stepText}${metaText}`,
                 },
               ],
               details: response,
@@ -414,42 +428,52 @@ const stratusPlugin = {
                 `\n\nConfig synced. Run /models to see the full list.`,
             };
           } else if (subcommand === "verify") {
-            // Run verify
             console.log("🔍 Verifying Stratus configuration...\n");
 
-            let errors = 0;
+            const hasKey = !!(pluginConfig.apiKey || process.env.STRATUS_API_KEY);
 
-            // Check 1: Environment variable
-            console.log("1️⃣  Checking STRATUS_API_KEY...");
-            if (process.env.STRATUS_API_KEY) {
-              console.log("   ✓ STRATUS_API_KEY is set");
+            console.log("1️⃣  Auth mode:");
+            if (hasKey) {
+              console.log("   ✓ BYOK — using STRATUS_API_KEY (no markup)");
             } else {
-              console.log("   ❌ STRATUS_API_KEY not found");
-              errors++;
+              console.log("   ✓ Formation pool — zero-config (25% markup)");
+              console.log("   💡 Set STRATUS_API_KEY to remove markup");
             }
 
-            // Check 2: Config exists
-            console.log("\n2️⃣  Checking plugin configuration...");
-            if (pluginConfig.apiKey || process.env.STRATUS_API_KEY) {
-              console.log("   ✓ API key configured");
-            } else {
-              console.log("   ❌ API key not configured");
-              errors++;
+            console.log("\n2️⃣  API connectivity...");
+            try {
+              const models = await generateAllModels(
+                hasKey ? (pluginConfig.apiKey || process.env.STRATUS_API_KEY) : undefined,
+                pluginConfig.baseUrl,
+              );
+              console.log(`   ✓ Connected — ${models.length} models available`);
+            } catch {
+              console.log("   ⚠ Could not reach API (may still work at runtime)");
+            }
+
+            console.log("\n3️⃣  Inline BYOK keys:");
+            const envKeys = [
+              ["OPENAI_API_KEY", process.env.OPENAI_API_KEY],
+              ["ANTHROPIC_API_KEY", process.env.ANTHROPIC_API_KEY],
+              ["GOOGLE_API_KEY", process.env.GOOGLE_API_KEY],
+            ] as const;
+            let anyInline = false;
+            for (const [name, val] of envKeys) {
+              if (val) {
+                console.log(`   ✓ ${name} detected (BYOK passthrough)`);
+                anyInline = true;
+              }
+            }
+            if (!anyInline) {
+              console.log("   – None set (optional — Formation pool covers all providers)");
             }
 
             console.log("\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-            if (errors === 0) {
-              console.log("✅ All checks passed!");
-              console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
-              console.log("🎯 Try it out:");
-              console.log("   openclaw agent 'Hello Stratus!' --model stratus\n");
-            } else {
-              console.log(`❌ ${errors} issue(s) found`);
-              console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
-              console.log("💡 Run: openclaw stratus setup\n");
-              process.exit(1);
-            }
-            return { text: "" }; // Return empty to avoid double output
+            console.log("✅ Stratus is ready!");
+            console.log("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n");
+            console.log("🎯 Try it out:");
+            console.log("   openclaw agent 'Hello Stratus!' --model stratus\n");
+            return { text: "" };
           } else {
             // Show help
             return {

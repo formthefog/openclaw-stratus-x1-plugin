@@ -132,9 +132,9 @@ Implement Option 1 (plugin-level role mapping) as it provides maximum compatibil
 
 ### "Stratus API key not configured"
 
-**Cause**: No API key found in config or environment.
+**Note**: As of March 2026, an API key is **no longer required**. The plugin uses Formation pooled keys by default (zero-config, 25% markup). This error should no longer appear.
 
-**Solution**:
+If you want BYOK (no markup), set your key:
 
 ```bash
 export STRATUS_API_KEY=stratus_sk_live_your_key_here

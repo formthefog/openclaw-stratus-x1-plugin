@@ -18,12 +18,30 @@
         "properties": {
           "apiKey": {
             "type": "string",
-            "description": "Stratus API key (or use STRATUS_API_KEY env var)"
+            "description": "Stratus API key (optional — Formation pool used as fallback)"
           },
           "baseUrl": {
             "type": "string",
             "default": "https://api.stratus.run",
             "description": "Stratus API base URL"
+          },
+          "inlineKeys": {
+            "type": "object",
+            "description": "Optional BYOK keys passed per-request to bypass Formation pool",
+            "properties": {
+              "openai_key": {
+                "type": "string",
+                "description": "OpenAI API key for BYOK passthrough"
+              },
+              "anthropic_key": {
+                "type": "string",
+                "description": "Anthropic API key for BYOK passthrough"
+              },
+              "gemini_key": {
+                "type": "string",
+                "description": "Google Gemini API key for BYOK passthrough (also sent as X-Google-Key header)"
+              }
+            }
           },
           "provider": {
             "type": "object",
